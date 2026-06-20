@@ -1,0 +1,140 @@
+@import 'flag-icons/css/flag-icons.min.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Raw RGB — Tailwind uses these for opacity variants (bg-navy-900/50 etc.) */
+    --c-navy-950: 6 16 30;
+    --c-navy-900: 8 18 31;
+    --c-navy-800: 6 33 75;
+    --c-navy-700: 17 40 72;
+    --c-navy-600: 2 54 121;
+    --c-navy-500: 135 182 235;
+
+    --c-gold-600: 161 116 0;
+    --c-gold-500: 223 168 0;
+    --c-gold-400: 225 183 40;
+    --c-gold-300: 242 212 100;
+
+
+    --c-live: 255 59 59;
+    --c-finished: 107 140 174;
+
+    --c-text-primary: 255 255 255;
+    --c-text-secondary: 139 163 188;
+    --c-text-muted: 189 223 255;
+    --c-text-accent: 223 168 0;
+  }
+
+  /* Font scale accessibility — applied via data-fontscale on <html> */
+  html {
+    font-size: 15px;
+  }
+
+  /* default = md */
+  html[data-fontscale="sm"] {
+    font-size: 13px;
+  }
+
+  html[data-fontscale="md"] {
+    font-size: 15px;
+  }
+
+  html[data-fontscale="lg"] {
+    font-size: 17px;
+  }
+
+  html[data-fontscale="xl"] {
+    font-size: 19px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply bg-navy-900 text-white;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-navy-950;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-navy-600;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-navy-500;
+  }
+}
+
+@layer utilities {
+
+  /* Gloss sweep on hover */
+  .gloss {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .gloss::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(105deg,
+        transparent 33.333%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 66.667%);
+    transform: translateX(-150%);
+    transition: transform 0.45s ease-in;
+  }
+
+  .gloss:hover::after {
+    transform: translateX(150%);
+  }
+
+  /* Live left border blink */
+  .live-border-blink {
+    animation: live-border-blink 2s ease-in-out infinite;
+  }
+
+  @keyframes live-border-blink {
+
+    0%,
+    100% {
+      border-color: #FF3B3B;
+    }
+
+    50% {
+      border-color: rgba(255, 59, 59, 0.35);
+    }
+  }
+
+  /* Scrollable horizontal */
+  .scroll-x {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .scroll-x::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Font variant numeric */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
