@@ -1,0 +1,75 @@
+/**
+ * TheSportsDB (thesportsdb.com) — team/squad/player data only.
+ * Free, keyless API. Used ONLY for squad rosters + player photos.
+ * Fixtures/standings/live score/stadiums stay on worldcup26.ir.
+ * No reliable coach/manager data exists here — confirmed missing even
+ * for high-profile teams, so that feature has no live source anymore.
+ */
+import { sportsDbNameFor } from '@utils/teams'
+
+const BASE_URL = 'https://www.thesportsdb.com/api/v1/json/3'
+
+function readCache(key) {
+  try { const r = sessionStorage.getItem(key); return r ? JSON.parse(r) : null }
+  catch { return null }
+}
+function writeCache(key, value) {
+  try { sessionStorage.setItem(key, JSON.stringify(value)) } catch { }
+}
+
+function bucketPosition(pos) {
+  if (!pos) return 'Midfielders'
+  const p = pos.toLowerCase()
+  if (p.includes('goalkeeper')) return 'Goalkeeper'
+  if (p.includes('back') || p.includes('defen')) return 'Defenders'
+  if (p.includes('forward') || p.includes('striker') || p.includes('wing')) return 'Forwards'
+  return 'Midfielders'
+}
+
+async function safeFetch(url) {
+  try {
+    const res = await fetch(url)
+    return res.ok ? await res.json() : null
+  } catch {
+    return null
+  }
+}
+
+/** Resolve a FIFA code to TheSportsDB's idTeam, preferring the national-team entry */
+async function findTeamId(fifaCode, displayName) {
+  const cacheKey = `sportsdb:team-id:${fifaCode}`
+  const cached = readCache(cacheKey)
+  if (cached) return cached
+
+  const searchName = sportsDbNameFor(fifaCode) ?? displayName
+  const data = await safeFetch(`${BASE_URL}/searchteams.php?t=${encodeURIComponent(searchName)}`)
+  const teams = data?.teams ?? []
+  if (teams.length === 0) return null
+
+  const best = teams.find(t => t.strLeague === 'FIFA World Cup') ?? teams[0]
+  writeCache(cacheKey, best.idTeam)
+  return best.idTeam
+}
+
+/** Squad for a national team |  positions already bucketed to our 4 groups */
+export async function getTeamSquad(fifaCode, displayName) {
+  const cacheKey = `sportsdb:squad:${fifaCode}`
+  const cached = readCache(cacheKey)
+  if (cached) return cached
+
+  const idTeam = await findTeamId(fifaCode, displayName)
+  if (!idTeam) return { players: [] }
+
+  const data = await safeFetch(`${BASE_URL}/lookup_all_players.php?id=${idTeam}`)
+  const players = (data?.player ?? [])
+    .filter(p => p.strSport === 'Soccer')
+    .map(p => ({
+      name: p.strPlayer,
+      position: bucketPosition(p.strPosition),
+      photo: p.strThumb ?? null,
+    }))
+
+  const result = { players }
+  writeCache(cacheKey, result)
+  return result
+}
