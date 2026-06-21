@@ -54,6 +54,10 @@ Standings are never fetched — always derived from cached fixtures via `compute
 
 `vite.config.js` proxies `/live` → `https://worldcup26.ir` to avoid CORS in development. In production, `VITE_LIVE_API_BASE` points directly at the real domain (whitelisting isn't needed since `worldcup26.ir` allows direct browser calls).
 
+## Routing
+
+Lightweight custom URL sync — no router dependency. `src/utils/routes.js` maps each tab to a path (`TAB_TO_PATH` / `PATH_TO_TAB`) plus a `tabForStage()` helper that maps a fixture's stage to its tab (used by search results and sidebar match cards). A single `useEffect` in `AppContext.jsx`, watching `state.activeTab`, is the **only** place that ever touches `window.history` — any action that changes `activeTab` (tab clicks, search, `goToStadium`, sidebar cards, etc.) gets the URL synced automatically, regardless of which action caused the change. A `popstate` listener syncs state back from the URL on browser back/forward, and direct links/refreshes resolve correctly via `tabFromPath()` on load.
+
 ## Stack
 
 - Vite 5 + React 18
@@ -61,7 +65,7 @@ Standings are never fetched — always derived from cached fixtures via `compute
 - Flags: `flagcdn.com` URLs from team API data (primary), `flag-icons` CSS sprites (fallback when no API flag URL)
 - `lucide-react` for all icons — zero emojis anywhere
 - React Context + `useReducer` (`src/context/AppContext.jsx`) — no external state library
-- No router — `activeTab` in context drives view switching
+- Custom lightweight URL sync (see Routing above) — no router dependency
 - Font-scaling accessibility: `data-fontscale` attribute on `<html>`, breakpoint-based default (`sm` under 1024px, `md` above), manual override S/M/L/XL in Settings
 
 ## Global Modals & Search Integration
@@ -70,7 +74,11 @@ Standings are never fetched — always derived from cached fixtures via `compute
 
 ## Bracket Predictor
 
-`BracketView.jsx` covers all knockout stages (R32 → R16 → QF → SF → Final). `GroupRankPicker.jsx` lets the user rank 1st/2nd/3rd per group, then pick exactly 8 of the 12 ranked-3rd teams as "best thirds" advancing alongside the 24 group winners/runners-up. `src/utils/bracketResolver.js` resolves placeholder labels (`"Winner Group J"`, `"3rd Group A/B/C/D/F"`, `"Winner Match 86"`) into the user's predicted team names for an interactive predicted bracket.
+`BracketView.jsx` covers all knockout stages (R32 → R16 → QF → SF → Final → 3rd Place). `GroupRankPicker.jsx` lets the user rank 1st/2nd/3rd per group, then pick exactly 8 of the 12 ranked-3rd teams as "best thirds" advancing alongside the 24 group winners/runners-up. `src/utils/bracketResolver.js` resolves placeholder labels (`"Winner Group J"`, `"3rd Group A/B/C/D/F"`, `"Winner Match 86"`) into the user's predicted team names for an interactive predicted bracket.
+
+### Bracket Export
+
+The predicted bracket can be exported as a PNG (1080p / 2K / 4K) via the Export dropdown in `BracketView.jsx`. Built as a real React component (`BracketCanvasFrame.jsx`), rendered offscreen and captured with `html-to-image` — not hand-built SVG strings — so the visual design is just normal Tailwind/CSS and easy to restyle going forward. `BracketPreviewModal.jsx` lets the user preview the export and customize the background (color / image / opacity) before downloading. The underlying bracket adjacency (which match feeds into which) is derived by parsing each knockout fixture's *original* placeholder label (e.g. `"Winner Match 73"`) rather than assumed array order, since official match numbering doesn't nest cleanly — this logic lives in `src/utils/exportBracket.js`.
 
 ## Live Animations
 
