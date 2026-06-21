@@ -1,4 +1,5 @@
 import { createContext, useContext, useReducer, useEffect, useCallback, useRef } from 'react'
+import { TAB_TO_PATH, tabFromPath } from '@utils/routes'
 import { MOCK_DATA } from '@data/mockData'
 import { adaptGames, buildTeamByName, buildStadiumMap, mergeLiveScores } from '@utils/adapters/worldcup26Adapter'
 
@@ -45,7 +46,7 @@ const INIT = {
   isLoading: true,
   error: null,
   lastUpdated: null,
-  activeTab: 'group',
+  activeTab: tabFromPath(window.location.pathname),
   selectedGroup: 'All',
   expandedMatchId: null,
   modalMatchId: null,
@@ -79,6 +80,8 @@ function reducer(state, { type, payload }) {
       return { ...state, selectedGroup: payload, expandedMatchId: null }
     case 'TOGGLE_MATCH':
       return { ...state, expandedMatchId: state.expandedMatchId === payload ? null : payload }
+    case 'EXPAND_MATCH':
+      return { ...state, expandedMatchId: payload }
     case 'OPEN_MODAL':
       return { ...state, modalMatchId: payload }
     case 'CLOSE_MODAL':
@@ -135,6 +138,23 @@ export function AppProvider({ children }) {
   // Apply saved font scale on mount
   useEffect(() => {
     document.documentElement.setAttribute('data-fontscale', INIT.fontScale)
+  }, [])
+
+  // (setTab, search, goToStadium, future actions), sync the URL to match.
+  useEffect(() => {
+    const path = TAB_TO_PATH[state.activeTab] ?? '/'
+    if (window.location.pathname !== path) {
+      window.history.pushState(null, '', path)
+    }
+  }, [state.activeTab])
+
+  // Sync state when the user navigates via browser back/forward
+  useEffect(() => {
+    const onPopState = () => {
+      dispatch({ type: 'SET_TAB', payload: tabFromPath(window.location.pathname) })
+    }
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
   }, [])
 
   // Load fixtures + teams + stadiums
@@ -337,6 +357,7 @@ export function AppProvider({ children }) {
     setTab: tab => dispatch({ type: 'SET_TAB', payload: tab }),
     setGroup: group => dispatch({ type: 'SET_GROUP', payload: group }),
     toggleMatch: id => dispatch({ type: 'TOGGLE_MATCH', payload: id }),
+    expandMatch: id => dispatch({ type: 'EXPAND_MATCH', payload: id }),
     openModal: id => dispatch({ type: 'OPEN_MODAL', payload: id }),
     closeModal: () => dispatch({ type: 'CLOSE_MODAL' }),
     openTeamModal: code => dispatch({ type: 'OPEN_TEAM_MODAL', payload: code }),
