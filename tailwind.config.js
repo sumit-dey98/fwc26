@@ -31,15 +31,17 @@ export default {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         display: ['Bebas Neue', 'sans-serif'],
         label: ['Barlow Condensed', 'Inter', 'sans-serif'],
+        posterHeading: ['Monoton', 'cursive'],
+        posterMatch: ['New Amsterdam', 'cursive'],
       },
       fontSize: {
         '2xs': ['0.5625rem', { lineHeight: '1.4', letterSpacing: '0.12em' }],
       },
       spacing: {
-        'navbar': '56px',
-        'sidebar': '320px',
-        'row': '52px',
-        'row-mob': '60px',
+        'navbar': 'var(--navbar-height)',
+        'sidebar': 'var(--sidebar-width)',
+        'row': 'var(--row-height)',
+        'row-mob': 'var(--row-mob-height)',
       },
       animation: {
         'live-blink': 'live-blink 2s ease-in-out infinite',

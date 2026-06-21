@@ -4,6 +4,7 @@ import { useApp } from '@context/AppContext'
 import TimezoneSelector from './TimezoneSelector'
 import { MOCK_DATA } from '@data/mockData'
 import Flag from '@components/ui/Flag'
+import { XCircle } from 'lucide-react'
 import { cn } from '@utils/cn'
 
 export default function SettingsDrawer({ isOpen, onClose }) {
@@ -60,16 +61,16 @@ export default function SettingsDrawer({ isOpen, onClose }) {
             </div>
 
             {favoriteTeam && (
-              <div className="absolute inset-x-0 top-0 h-11 flex items-center gap-2 px-3 bg-navy-700 border-b border-gold-500/30 z-10">
+              <div className="absolute inset-x-0 top-0 h-11 flex items-center gap-2 px-3 bg-navy-900 border-b border-gold-500/30 z-10">
                 <Flag teamName={MOCK_DATA.teams.find(t => t.code === favoriteTeam)?.name ?? ''} size={16} />
                 <span className="text-sm font-bold text-gold-400 truncate">
                   {MOCK_DATA.teams.find(t => t.code === favoriteTeam)?.name ?? favoriteTeam}
                 </span>
                 <button
                   onClick={() => setFavorite(null)}
-                  className="ml-auto text-2xs text-content-muted hover:text-red-400 transition-colors flex-shrink-0"
+                  className="ml-auto text-2xs text-red-400 hover:text-red-500 transition-colors flex-shrink-0 leading-none"
                 >
-                  Remove
+                  <XCircle size='1.5em' />
                 </button>
               </div>
             )}
@@ -124,8 +125,9 @@ export default function SettingsDrawer({ isOpen, onClose }) {
         <p className="text-xs text-content-muted mt-2">Adjusts all interface text size</p>
       </div>
 
-      <div className="px-4 py-4 border-t border-navy-900 mt-auto">
-        <p className="text-2xs text-navy-500/70">WC 2026 · Data: worldcup26.ir + TheStatsAPI</p>
+      <div className="px-4 py-4 border-t border-navy-900 mt-auto flex items-center justify-between flex-wrap gap-x-4">
+        <p className="text-2xs text-navy-500/70">WC 2026 · Data: <a href="https://github.com/rezarahiminia/worldcup2026" target="_blank" rel="noopener noreferrer" className="hover:text-gold-400 transition-colors">worldcup26.ir</a> + <a href="https://www.thesportsdb.com" target="_blank" rel="noopener noreferrer" className="hover:text-gold-400 transition-colors">thesportsdb.com</a> + <a href="https://www.wikipedia.org" target="_blank" rel="noopener noreferrer" className="hover:text-gold-400 transition-colors">wikipedia</a></p>
+        <a href="https://dev-sumit.vercel.app/" className='text-2xs text-navy-500/80 undeline hover:text-gold-400 undeline'>&copy; Sumit Hillol Dey</a>
       </div>
     </div>
   )

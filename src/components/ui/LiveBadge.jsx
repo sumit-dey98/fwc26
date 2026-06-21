@@ -12,8 +12,8 @@ export default function LiveBadge({ minute, size = 'md' }) {
       )}
     >
       <Timer
-        className="text-live animate-live-pulse flex-shrink-0 mb-0.5"
-        size={sm ? 10 : 14}
+        className="text-live animate-live-pulse flex-shrink-0"
+        size='1em'
       />
       {minute != null ? `${minute}'` : 'Live'}
     </span>

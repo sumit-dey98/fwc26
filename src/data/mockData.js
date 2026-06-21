@@ -112,7 +112,7 @@ export const MOCK_DATA = {
     { code: "JOR", name: "Jordan",                  group: "J", fifaRank: 68, confederation: "AFC",      flag: "🇯🇴" },
     // Group K
     { code: "POR", name: "Portugal",                group: "K", fifaRank:  6, confederation: "UEFA",     flag: "🇵🇹" },
-    { code: "COD", name: "DR Congo",                group: "K", fifaRank: 56, confederation: "CAF",      flag: "🇨🇩" },
+    { code: "COD", name: "Democratic Republic of the Congo",                group: "K", fifaRank: 56, confederation: "CAF",      flag: "🇨🇩" },
     { code: "UZB", name: "Uzbekistan",              group: "K", fifaRank: 50, confederation: "AFC",      flag: "🇺🇿" },
     { code: "COL", name: "Colombia",                group: "K", fifaRank: 13, confederation: "CONMEBOL", flag: "🇨🇴" },
     // Group L

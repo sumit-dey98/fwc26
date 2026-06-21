@@ -27,9 +27,39 @@
     --c-text-secondary: 139 163 188;
     --c-text-muted: 189 223 255;
     --c-text-accent: 223 168 0;
+
+    /* Responsive spacing tokens */
+    --navbar-height: 56px;
+    --sidebar-width: 320px;
+    --row-height: 52px;
+    --row-mob-height: 60px;
   }
 
-  /* Font scale accessibility — applied via data-fontscale on <html> */
+  @media (min-width: 1280px) {
+
+    /* xl */
+    :root {
+      --sidebar-width: 360px;
+    }
+  }
+
+  @media (min-width: 1536px) {
+
+    /* 2xl */
+    :root {
+      --sidebar-width: 400px;
+    }
+  }
+
+  @media (min-width: 2560px) {
+      
+    /* higher res */
+    :root {
+      --sidebar-width: 33.333%;
+    }
+  }
+
+  /* Font scale accessibility - applied via data-fontscale on <html> */
   html {
     font-size: 15px;
   }

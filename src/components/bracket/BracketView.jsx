@@ -1,12 +1,15 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useApp } from '@context/AppContext'
 import { usePredictions } from '@hooks/usePredictions'
 import { resolvePredictedBracket } from '@utils/bracketResolver'
 import BracketSlot from './BracketSlot'
 import GroupRankPicker from './GroupRankPicker'
 import { byStage } from '@utils/fixtures'
-import { RotateCcw, ArrowRight } from 'lucide-react'
+import { RotateCcw, ArrowRight, Download, ChevronDown } from 'lucide-react'
 import PredictorHelp from './PredictorHelp'
+import BracketCanvasFrame from './BracketCanvasFrame'
+import BracketPreviewModal from './BracketPreviewModal'
+import { exportBracketPNG } from '@utils/exportBracket'
 import { cn } from '@utils/cn'
 
 const BRACKET_STAGES = [
@@ -14,17 +17,27 @@ const BRACKET_STAGES = [
   { stage: 'round-of-16', label: 'R16' },
   { stage: 'quarter-finals', label: 'QF' },
   { stage: 'semi-finals', label: 'SF' },
+  { stage: 'third-place', label: '3rd Place' },
   { stage: 'final', label: 'Final' },
 ]
 
 const MAX_BEST_THIRDS = 8
 
+const DEFAULT_BG = { color: '#08121f', image: '/brackets-bg_1.png', opacity: 0.6 }
+
 export default function BracketView() {
-  const { fixtures } = useApp()
+  const { fixtures, teamByName } = useApp()
+  const [exportOpen, setExportOpen] = useState(false)
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [bg, setBg] = useState(DEFAULT_BG)
   const { predictions, getPrediction, setPrediction, score, clearPredictions } = usePredictions()
-  const [step, setStep] = useState('picks') 
+  const [step, setStep] = useState('picks')
   const [groupPicks, setGroupPicks] = useState({})
   const [bestThirds, setBestThirds] = useState([])
+
+  const hdFrameRef = useRef(null)
+  const qhdFrameRef = useRef(null)
+  const uhdFrameRef = useRef(null)
 
   const onGroupChange = (g, picks) => {
     setGroupPicks(prev => ({ ...prev, [g]: picks }))
@@ -52,8 +65,52 @@ export default function BracketView() {
     [fixtures, groupPicks, bestThirds, predictions]
   )
 
+  const exportOptions = [
+    { label: 'Preview', action: () => setPreviewOpen(true) },
+    { label: '1080p', action: () => exportBracketPNG(hdFrameRef.current, 1920, 'wc26-bracket-1080p.png') },
+    { label: '2K', action: () => exportBracketPNG(qhdFrameRef.current, 2560, 'wc26-bracket-2k.png') },
+    { label: '4K', action: () => exportBracketPNG(uhdFrameRef.current, 3840, 'wc26-bracket-4k.png') },
+  ]
+
   return (
     <div className="animate-fade-in">
+      <div style={{ position: 'fixed', top: 0, left: '-99999px' }} aria-hidden="true">
+        <BracketCanvasFrame
+          ref={hdFrameRef}
+          width={1920}
+          rawFixtures={fixtures}
+          predictedFixtures={predictedFixtures}
+          teamByName={teamByName}
+          bgColor={DEFAULT_BG.color}
+        />
+        <BracketCanvasFrame
+          ref={qhdFrameRef}
+          width={2560}
+          rawFixtures={fixtures}
+          predictedFixtures={predictedFixtures}
+          teamByName={teamByName}
+          bgColor={DEFAULT_BG.color}
+        />
+        <BracketCanvasFrame
+          ref={uhdFrameRef}
+          width={3840}
+          rawFixtures={fixtures}
+          predictedFixtures={predictedFixtures}
+          teamByName={teamByName}
+          bgColor={DEFAULT_BG.color}
+        />
+      </div>
+
+      <BracketPreviewModal
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        rawFixtures={fixtures}
+        predictedFixtures={predictedFixtures}
+        teamByName={teamByName}
+        bg={bg}
+        onBgChange={setBg}
+      />
+
       {total > 0 && (
         <div className="px-4 py-2 border-b border-navy-700 flex items-center gap-3">
           <span className="text-2xs text-content-muted">Your prediction score:</span>
@@ -63,12 +120,36 @@ export default function BracketView() {
 
       <div className="relative px-4 py-2 border-b border-navy-700 flex justify-end items-center gap-2 flex-wrap">
         <PredictorHelp />
-        <button
+        <div className="relative">
+          <button
+            onClick={() => setExportOpen(v => !v)}
+            className="relative px-4 pr-10 py-2 border border-gold-500 text-content-muted text-xs font-bold capitalize tracking-widest !leading-none hover:text-gold-400 transition-colors flex items-center gap-1.5"
+          >
+            <Download size={14} /> Export <div className='absolute right-0 bg-gold-500 h-full px-1.5 flex items-center'> <ChevronDown size={14} className=' text-navy-800'/> </div>
+          </button>
+          {exportOpen && (
+            <div className="absolute right-0 top-full mt-1 w-32 bg-navy-800 border border-navy-600 z-20">
+              {exportOptions.map(({ label, action }) => (
+                <button
+                  key={label}
+                  onClick={() => {
+                    action()
+                    setExportOpen(false)
+                  }}
+                  className="w-full px-3 py-2 text-left text-xs text-content-secondary hover:bg-navy-700 hover:text-gold-400 transition-colors"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        {/* <button
           onClick={() => setStep('bracket')}
           className="px-4 py-2 bg-gold-500 text-navy-950 text-xs font-bold capitalize tracking-widest !leading-none hover:bg-gold-400 transition-colors flex items-center gap-1"
         >
           Continue <ArrowRight size={16} />
-        </button>
+        </button> */}
       </div>
 
       <div className="flex border-b border-navy-700 view-tabs">

@@ -19,7 +19,7 @@ export default function CountdownTimer({ kickoffUtc, className = '' }) {
 
   return (
     <span className={`inline-flex items-center gap-1 text-xs text-content-muted tabular ${className}`}>
-      <Timer size={10} className="flex-shrink-0" />
+      <Timer size='0.9em' className="flex-shrink-0" />
       {display}
     </span>
   )
