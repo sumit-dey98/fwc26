@@ -304,7 +304,7 @@ const BracketExportTemplate = forwardRef(function BracketExportTemplate(
       {matches.map(({ key, x, y, width, height }) => (
         <div
           key={key}
-          className="absolute bg-gold-500/40 border-2 border-gold-500"
+          className="absolute bg-gold-500/40 border-2 border-gold-500 shadow-2xl"
           style={{ left: x - SIZES.connectorOffset, top: y - SIZES.connectorOffset, width: width + SIZES.connectorOffset * 2, height: height + SIZES.connectorOffset * 2 }}
         />
       ))}
