@@ -23,7 +23,7 @@ const BRACKET_STAGES = [
 
 const MAX_BEST_THIRDS = 8
 
-const DEFAULT_BG = { color: '#08121f', image: '/brackets-bg_1.png', opacity: 0.6 }
+const DEFAULT_BG = { color: '#08121f', image: '/brackets-bg_2.jpg', opacity: 0.4 }
 
 export default function BracketView() {
   const { fixtures, teamByName } = useApp()
