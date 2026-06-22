@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from 'react'
+import { ArrowUp } from 'lucide-react'
 import NavBar from './NavBar'
 import Sidebar from './Sidebar'
 import MobileMatchDrawer from '@components/sidebar/MobileMatchDrawer'
@@ -26,13 +28,35 @@ function ActiveView() {
 
 export default function Layout() {
   const { isLoading } = useApp()
+  const mainRef = useRef(null)
+  const [showBackToTop, setShowBackToTop] = useState(false)
+
+  useEffect(() => {
+    const node = mainRef.current
+    if (!node) return
+    const onScroll = () => setShowBackToTop(node.scrollTop > 400)
+    node.addEventListener('scroll', onScroll)
+    return () => node.removeEventListener('scroll', onScroll)
+  }, [])
 
   return (
     <div className="flex flex-col h-dvh overflow-hidden bg-navy-900">
       <NavBar />
       <div className="flex flex-1 overflow-hidden">
-        <main className="flex-1 overflow-y-auto">
+        <main ref={mainRef} className="relative flex-1 overflow-y-auto">
           {isLoading ? <Loader label="Loading schedule..." /> : <ActiveView />}
+
+          <div className="sticky bottom-4 z-20 h-0">
+            {showBackToTop && (
+              <button
+                onClick={() => mainRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
+                title="Back to top"
+                className="absolute bottom-2 right-6 border border-navy-600 hover:border-navy-900 bg-navy-900/30 hover:bg-gold-500 hover:text-navy-900 backdrop-blur-sm p-2.5 text-white transition-colors hover:text-gold-400"
+              >
+                <ArrowUp size={18} />
+              </button>
+            )}
+          </div>
         </main>
         <Sidebar />
       </div>
