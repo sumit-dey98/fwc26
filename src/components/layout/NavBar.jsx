@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Search, Settings, Menu, X } from 'lucide-react'
+import { Search, Settings, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useApp } from '@context/AppContext'
 import { cn } from '@utils/cn'
 import SettingsDrawer from '@components/settings/SettingsDrawer'
@@ -10,6 +10,7 @@ const TABS = [
   { id: 'r32', label: 'Round of 32' },
   { id: 'r16', label: 'Round of 16' },
   { id: 'finals', label: 'The Finals' },
+  { id: 'predictor', label: 'Predictor' },
   { id: 'stats', label: 'Stats' },
   { id: 'stadiums', label: 'Stadiums' },
   { id: 'teams', label: 'Teams' },
@@ -24,6 +25,27 @@ export default function NavBar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const navRef = useRef(null)
   const searchInputRef = useRef(null)
+  const tabsRef = useRef(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+
+  const updateScrollState = () => {
+    const el = tabsRef.current
+    if (!el) return
+    setCanScrollLeft(el.scrollLeft > 4)
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
+  }
+
+  const scrollTabs = dir => tabsRef.current?.scrollBy({ left: dir * 160, behavior: 'smooth' })
+
+  useEffect(() => {
+    const el = tabsRef.current
+    if (!el) return
+    updateScrollState()
+    const ro = new ResizeObserver(updateScrollState)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
 
   const anyOpen = searchOpen || settingsOpen || mobileOpen
 
@@ -77,27 +99,51 @@ export default function NavBar() {
     <header ref={navRef} className="flex-shrink-0 bg-navy-800 border-b border-navy-700 relative z-30">
       <div className="flex items-stretch h-navbar">
         <div className="flex items-center gap-2 border-r border-b border-b-navy-950/50 border-navy-700 flex-shrink-0">
-          <img src="/logo.png" className='h-full aspect-square overflow-hidden' alt="FIFA World Cup 2026" />
+          <img src="/logo.webp" className='h-full aspect-square overflow-hidden' alt="FIFA World Cup 2026" />
         </div>
 
-        <nav className="hidden lg:flex flex-1 items-stretch scroll-x border-b border-navy-950/50">
-          {TABS.map(tab => (
+        <div className="hidden lg:flex flex-1 relative min-w-0">
+          {canScrollLeft && (
             <button
-              key={tab.id}
-              onClick={() => handleTab(tab.id)}
-              className={cn(
-                'flex items-center px-4 h-full flex-shrink-0 gloss',
-                'font-label text-base font-semibold uppercase tracking-widest',
-                'transition-colors duration-150 border-b-2',
-                activeTab === tab.id
-                  ? 'text-gold-500 border-gold-500'
-                  : 'text-content-muted border-transparent hover:text-gold-400 hover:border-gold-600/50'
-              )}
+              onClick={() => scrollTabs(-1)}
+              aria-label="Scroll tabs left"
+              className="absolute left-0 top-0 bottom-0 z-10 flex items-center justify-center w-7 backdrop-blur-[2px] bg-navy-900/40 border-b border-navy-950/50 text-gold-500 hover:text-gold-400 transition-colors"
             >
-              {tab.label}
+              <ChevronLeft size={20} strokeWidth={2.5} />
             </button>
-          ))}
-        </nav>
+          )}
+          <nav
+            ref={tabsRef}
+            onScroll={updateScrollState}
+            className="flex flex-1 items-stretch scroll-x border-b border-navy-950/50 overflow-x-auto"
+          >
+            {TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => handleTab(tab.id)}
+                className={cn(
+                  'flex items-center px-4 h-full flex-shrink-0 gloss',
+                  'font-label text-base font-semibold uppercase tracking-widest',
+                  'transition-colors duration-150 border-b-2',
+                  activeTab === tab.id
+                    ? 'text-gold-500 border-gold-500'
+                    : 'text-content-muted border-transparent hover:text-gold-400 hover:border-gold-600/50'
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+          {canScrollRight && (
+            <button
+              onClick={() => scrollTabs(1)}
+              aria-label="Scroll tabs right"
+              className="absolute right-0 top-0 bottom-0 z-10 flex items-center justify-center w-7 backdrop-blur-[2px] bg-navy-900/40 border-b border-navy-950/50 text-gold-500 hover:text-gold-400 transition-colors"
+            >
+              <ChevronRight size={20} strokeWidth={2.5} />
+            </button>
+          )}
+        </div>
 
         <div className="flex-1 flex items-center px-3 lg:hidden border-b border-navy-950/50">
           <span className="font-label text-base font-semibold uppercase tracking-widest text-gold-500">

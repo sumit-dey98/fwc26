@@ -16,8 +16,8 @@ function ActiveView() {
     case 'group': return <GroupStageView />
     case 'r32': return <KnockoutView stage="round-of-32" label="Round of 32" />
     case 'r16': return <KnockoutView stage="round-of-16" label="Round of 16" />
-    case 'finals': return <FinalsView />
-    case 'stats': return <StatsView />
+    case 'finals': return <FinalsView defaultMode="live" />
+    case 'predictor': return <FinalsView defaultMode="predict" />
     case 'stadiums': return <StadiumsView />
     case 'teams': return <TeamsView />
     default: return <GroupStageView />

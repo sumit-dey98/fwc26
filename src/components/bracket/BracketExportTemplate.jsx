@@ -7,7 +7,7 @@ const SIZES = {
   boxW: 186,
   boxH: 48, //44
   boxGap: 8,
-  matchGap: 48,
+  matchGap: 44,
   roundGap: 55,
   centerGap: 244,
   marginX: 24,
@@ -233,7 +233,7 @@ function useBracketLayout(rawFixtures, predictedFixtures, teamByName) {
 }
 
 const BracketExportTemplate = forwardRef(function BracketExportTemplate(
-  { rawFixtures, predictedFixtures, teamByName, logoSrc = '/logo.png' },
+  { rawFixtures, predictedFixtures, teamByName, logoSrc = '/logo.webp' },
   ref
 ) {
   const layout = useBracketLayout(rawFixtures, predictedFixtures, teamByName)
@@ -245,32 +245,37 @@ const BracketExportTemplate = forwardRef(function BracketExportTemplate(
   return (
     <div ref={ref} className="relative w-full " style={{ width, height }}>
       <div
-        className="absolute left-1/2 flex -translate-x-1/2 items-center justify-center w-full gap-4"
+        className="absolute left-1/2 flex flex-col -translate-x-1/2 items-center justify-center w-full"
         style={{ top: titleY + 20 - SIZES.logoSize / 2 }}
       >
-        {logoSrc && (
-          <img
-            src={logoSrc}
-            crossOrigin="anonymous"
-            alt=""
-            className="block"
-            style={{ width: SIZES.logoSize, height: SIZES.logoSize }}
-          />
-        )}
-        <span className="font-posterHeading text-[76px] tracking-wide text-gold-500 !leading-none mt-1">FIFA WORLD CUP 2026</span>
+        <div className='flex items-center justify-center gap-4'>
+          {logoSrc && (
+            <img
+              src={logoSrc}
+              crossOrigin="anonymous"
+              alt=""
+              className="block"
+              style={{ width: SIZES.logoSize, height: SIZES.logoSize }}
+            />
+          )}
+          <span className="font-posterHeading text-[76px] tracking-wide text-gold-500 !leading-none mt-1">FIFA WORLD CUP 2026</span>
+        </div>
+        <span className="font-posterMatch text-3xl tracking-wide text-gold-500 !leading-none">KNOCKOUT PREDICTIONS</span>
+
       </div>
+
 
       <div className="absolute left-0 right-0" style={{ top: labelBarY + 80, height: SIZES.roundLabelHeight }} />
       {stageLabelPositions.map(({ label, leftX, rightX }) => (
         <Fragment key={label}>
           <span
-            className="absolute -translate-x-1/2 whitespace-nowrap text-lg font-label font-bold tracking-widest text-gold-500 border-b-2 border-gold-500"
+            className="absolute -translate-x-1/2 whitespace-nowrap text-lg font-posterMatch font-bold tracking-widest text-gold-500 border-b-2 border-gold-500"
             style={{ top: labelBarY + 80, left: leftX, lineHeight: `${SIZES.roundLabelHeight}px` }}
           >
             {label}
           </span>
           <span
-            className="absolute -translate-x-1/2 whitespace-nowrap text-lg font-label font-bold tracking-widest text-gold-500 border-b-2 border-gold-500"
+            className="absolute -translate-x-1/2 whitespace-nowrap text-lg font-posterMatch font-bold tracking-widest text-gold-500 border-b-2 border-gold-500"
             style={{ top: labelBarY + 80, left: rightX, lineHeight: `${SIZES.roundLabelHeight}px` }}
           >
             {label}
@@ -278,7 +283,7 @@ const BracketExportTemplate = forwardRef(function BracketExportTemplate(
         </Fragment>
       ))}
       <span
-        className="absolute -translate-x-1/2 whitespace-nowrap text-lg font-label font-bold tracking-widest text-gold-500 border-b-2 border-gold-500"
+        className="absolute -translate-x-1/2 whitespace-nowrap text-lg font-posterMatch font-bold tracking-widest text-gold-500 border-b-2 border-gold-500"
         style={{ top: labelBarY + 80, left: finalLabelX, lineHeight: `${SIZES.roundLabelHeight}px` }}
       >
         FINAL

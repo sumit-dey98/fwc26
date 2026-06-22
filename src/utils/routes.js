@@ -3,6 +3,7 @@ export const TAB_TO_PATH = {
   r32: '/round-of-32',
   r16: '/round-of-16',
   finals: '/finals',
+  predictor: '/predictor',
   stats: '/stats',
   stadiums: '/stadiums',
   teams: '/teams',

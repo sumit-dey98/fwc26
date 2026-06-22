@@ -1,5 +1,5 @@
 import { BarChart2, FlaskConical, Trophy } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useApp } from '@context/AppContext'
 import BracketView from '@components/bracket/BracketView'
 import MatchList from '@components/match/MatchList'
@@ -14,9 +14,14 @@ const FINAL_STAGES = [
   { stage: 'final',          label: 'Final'          },
 ]
 
-export default function FinalsView() {
+export default function FinalsView({ defaultMode = 'live' }) {
   const { fixtures } = useApp()
-  const [mode, setMode] = useState('live') // 'live' | 'predict'
+  const [mode, setMode] = useState(defaultMode) // 'live' | 'predict'
+
+  // Re-sync when navigating between the Finals tab and the Predictor tab
+  useEffect(() => {
+    setMode(defaultMode)
+  }, [defaultMode])
 
   return (
     <div className="animate-fade-in">

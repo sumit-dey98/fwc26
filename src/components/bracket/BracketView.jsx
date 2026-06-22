@@ -123,9 +123,9 @@ export default function BracketView() {
         <div className="relative">
           <button
             onClick={() => setExportOpen(v => !v)}
-            className="relative px-4 pr-10 py-2 border border-gold-500 text-content-muted text-xs font-bold capitalize tracking-widest !leading-none hover:text-gold-400 transition-colors flex items-center gap-1.5"
+            className="relative px-4 pr-11 py-2 border border-gold-500 bg-gold-500 hover:bg-gold-400 text-navy-800 text-xs font-bold capitalize tracking-widest !leading-none transition-colors flex items-center gap-1.5"
           >
-            <Download size={14} /> Export <div className='absolute right-0 bg-gold-500 h-full px-1.5 flex items-center'> <ChevronDown size={14} className=' text-navy-800'/> </div>
+            <Download size={14} /> Export <div className='absolute right-0 h-full px-1.5 flex items-center border-l border-navy-800'> <ChevronDown size={18} strokeWidth={2} className={exportOpen ? 'rotate-180 transition-transform' : 'transition-transform'} /> </div>
           </button>
           {exportOpen && (
             <div className="absolute right-0 top-full mt-1 w-32 bg-navy-800 border border-navy-600 z-20">
@@ -136,7 +136,7 @@ export default function BracketView() {
                     action()
                     setExportOpen(false)
                   }}
-                  className="w-full px-3 py-2 text-left text-xs text-content-secondary hover:bg-navy-700 hover:text-gold-400 transition-colors"
+                  className="w-full px-3 py-2 text-left text-xs font-medium text-content-secondary hover:bg-navy-700 hover:text-gold-400 transition-colors"
                 >
                   {label}
                 </button>
