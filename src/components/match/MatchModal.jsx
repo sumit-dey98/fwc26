@@ -1,12 +1,23 @@
-import { X, MapPin } from 'lucide-react'
+import { X, MapPin, Users } from 'lucide-react'
 import { useApp } from '@context/AppContext'
 import { useTimezone } from '@hooks/useTimezone'
-// import { useFixtureReferee } from '@hooks/useApiFootball'
+import { useMatchDetail } from '@hooks/useMatchDetail'
 import { getDisplayName } from '@utils/teams'
 import Flag from '@components/ui/Flag'
 import LiveBadge from '@components/ui/LiveBadge'
 import ScoreBox from '@components/ui/ScoreBox'
 import Avatar from '@components/ui/Avatar'
+import { cn } from '@utils/cn'
+
+const EVENT_ICON = {
+  Goal: type => type === 'Own Goal'
+    ? <span className="inline-block w-2 h-2 rounded-full bg-red-400 flex-shrink-0" />
+    : <span className="inline-block w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />,
+  Card: detail => detail === 'Red Card'
+    ? <span className="inline-block w-2 h-3 bg-red-500 flex-shrink-0" />
+    : <span className="inline-block w-2 h-3 bg-yellow-400 flex-shrink-0" />,
+  subst: () => <span className="inline-block w-2 h-2 rounded-full bg-navy-400 flex-shrink-0" />,
+}
 
 export default function MatchModal() {
   const { modalMatchId, fixtures, closeModal } = useApp()
@@ -14,16 +25,18 @@ export default function MatchModal() {
 
   const fixture = fixtures.find(f => f.matchNumber === modalMatchId)
 
-  // const { referee, loading: refereeLoading } = useFixtureReferee(
-  //   fixture?.homeTeam, // team code expected — see note below
-  //   fixture?.awayTeam,
-  //   fixture?.kickoffUtc
-  // )
+  const { referee, timeline, lineups, stats, loading: detailLoading } = useMatchDetail(
+    fixture?.homeTeam,
+    fixture?.awayTeam
+  )
 
   if (!fixture) return null
 
   const isLive = fixture.status === 'live'
   const isDone = fixture.status === 'finished'
+
+  const homeLineup = lineups.filter(p => p.isHome && !p.isSubstitute)
+  const awayLineup = lineups.filter(p => !p.isHome && !p.isSubstitute)
 
   return (
     <div
@@ -91,61 +104,144 @@ export default function MatchModal() {
             </p>
           </div>
 
-          {(isDone || isLive) && fixture.events?.length > 0 && (
+          {/* Match Events — TheSportsDB timeline (goals, cards, subs) */}
+          {(isDone || isLive) && (
             <div className="px-5 py-4 border-b border-navy-700">
               <p className="text-xs font-bold uppercase tracking-widest text-gold-500 mb-2">Match Events</p>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-2xs text-content-muted mb-2">{getDisplayName(fixture.homeTeam)}</p>
-                  {fixture.events.filter(e => e.teamSide === 'home').map((e, i) => (
-                    <div key={i} className="text-xs text-content-secondary py-0.5">
-                      <span className="inline-flex items-center gap-1.5">
-                        {e.type === 'yellow' ? <span className="inline-block w-2 h-3 bg-yellow-400 flex-shrink-0" />
-                          : e.type === 'red' ? <span className="inline-block w-2 h-3 bg-red-500 flex-shrink-0" />
-                            : <span className="inline-block w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />}
-                        {e.minute}' {e.player}
-                      </span>
-                    </div>
-                  ))}
+              {detailLoading ? (
+                <p className="text-xs text-content-muted italic">Loading...</p>
+              ) : timeline.length === 0 ? (
+                <p className="text-xs text-content-muted italic">Data not available</p>
+              ) : (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-2xs text-content-muted mb-2">{getDisplayName(fixture.homeTeam)}</p>
+                    {timeline.filter(e => e.isHome).map((e, i) => (
+                      <div key={i} className="text-xs text-content-secondary py-0.5">
+                        <span className="inline-flex items-center gap-1.5">
+                          {EVENT_ICON[e.type]?.(e.detail)}
+                          {e.minute}' {e.player}
+                          {e.type === 'Goal' && e.assist && <span className="text-content-muted italic">(ast. {e.assist})</span>}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xs text-content-muted mb-2">{getDisplayName(fixture.awayTeam)}</p>
+                    {timeline.filter(e => !e.isHome).map((e, i) => (
+                      <div key={i} className="text-xs text-content-secondary py-0.5">
+                        <span className="inline-flex items-center gap-1.5 justify-end">
+                          {e.type === 'Goal' && e.assist && <span className="text-content-muted italic">(ast. {e.assist})</span>}
+                          {e.minute}' {e.player}
+                          {EVENT_ICON[e.type]?.(e.detail)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-2xs text-content-muted mb-2">{getDisplayName(fixture.awayTeam)}</p>
-                  {fixture.events.filter(e => e.teamSide === 'away').map((e, i) => (
-                    <div key={i} className="text-xs text-content-secondary py-0.5">
-                      {e.player} {e.minute}' {e.type === 'yellow' ? <span className="inline-block w-2 h-3 bg-yellow-400" /> : e.type === 'red' ? <span className="inline-block w-2 h-3 bg-red-500" /> : <span className="inline-block w-2 h-2 rounded-full bg-green-500" />}
-                    </div>
-                  ))}
-                </div>
-              </div>
+              )}
             </div>
           )}
 
+          {/* Lineups — real starting XI from TheSportsDB */}
           <div className="px-5 py-4 border-b border-navy-700">
             <p className="text-xs font-bold uppercase tracking-widest text-gold-500 mb-2">Lineups</p>
-            <div className="grid grid-cols-2 gap-4">
-              {[fixture.homeTeam, fixture.awayTeam].map(team => (
-                <div key={team}>
-                  <div className='flex items-center gap-2 mb-2'>
-                    <Flag teamName={team} size={20} />
-                    <p className="text-base tracking-wider font-display text-content-muted mt-0.5">
-                      {getDisplayName(team)}
-                    </p>
+            {detailLoading ? (
+              <p className="text-xs text-content-muted italic">Loading...</p>
+            ) : lineups.length === 0 ? (
+              <div className="grid grid-cols-2 gap-4">
+                {[fixture.homeTeam, fixture.awayTeam].map(team => (
+                  <div key={team}>
+                    <div className='flex items-center gap-2 mb-2'>
+                      <Flag teamName={team} size={20} />
+                      <p className="text-base tracking-wider font-display text-content-muted mt-0.5">
+                        {getDisplayName(team)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users size={16} className="text-content-muted" />
+                      <span className="text-xs text-content-muted italic">Data not available</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Avatar name="TBD" size={24} />
-                    <span className="text-xs text-content-muted italic">Data not available</span>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Flag teamName={fixture.homeTeam} size={16} />
+                    <p className="text-sm font-display text-content-muted">{getDisplayName(fixture.homeTeam)}</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    {homeLineup.map(p => (
+                      <div key={p.name} className="flex items-center gap-2">
+                        <Avatar name={p.name} src={p.photo} size={22} />
+                        <span className="text-xs text-content-secondary truncate">{p.name}</span>
+                        <span className="text-2xs text-content-muted ml-auto flex-shrink-0">{p.position}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-2 justify-end">
+                    <p className="text-sm font-display text-content-muted">{getDisplayName(fixture.awayTeam)}</p>
+                    <Flag teamName={fixture.awayTeam} size={16} />
+                  </div>
+                  <div className="space-y-1.5">
+                    {awayLineup.map(p => (
+                      <div key={p.name} className="flex items-center gap-2 justify-end">
+                        <span className="text-2xs text-content-muted flex-shrink-0">{p.position}</span>
+                        <span className="text-xs text-content-secondary truncate">{p.name}</span>
+                        <Avatar name={p.name} src={p.photo} size={22} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
+          {/* Match Statistics — new section */}
+          {(isDone || isLive) && (
+            <div className="px-5 py-4 border-b border-navy-700">
+              <p className="text-xs font-bold uppercase tracking-widest text-gold-500 mb-3">Match Statistics</p>
+              {detailLoading ? (
+                <p className="text-xs text-content-muted italic">Loading...</p>
+              ) : stats.length === 0 ? (
+                <p className="text-xs text-content-muted italic">Data not available</p>
+              ) : (
+                <div className="space-y-2.5">
+                  {stats.map(s => {
+                    const total = s.home + s.away || 1
+                    const homePct = (s.home / total) * 100
+                    return (
+                      <div key={s.label}>
+                        <div className="flex items-center justify-between text-xs text-content-secondary mb-1">
+                          <span className="font-bold w-8 text-left">{s.home}</span>
+                          <span className="text-2xs text-content-muted uppercase tracking-wide">{s.label}</span>
+                          <span className="font-bold w-8 text-right">{s.away}</span>
+                        </div>
+                        <div className="h-1.5 bg-navy-900 flex overflow-hidden">
+                          <div className="bg-gold-500" style={{ width: `${homePct}%` }} />
+                          <div className="bg-navy-500 flex-1" />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Officials */}
           <div className="px-5 py-4">
             <p className="text-xs font-bold uppercase tracking-widest text-gold-500 mb-2">Officials</p>
             <div className="flex items-center gap-3">
-              <Avatar name={fixture.referee ?? 'Referee'} size={28} />
-              {fixture.referee ? (
-                <span className="text-sm text-content-secondary">{fixture.referee}</span>
+              <Avatar name={referee ?? 'Referee'} size={28} />
+              {detailLoading ? (
+                <span className="text-xs text-content-muted italic">Loading...</span>
+              ) : referee ? (
+                <span className="text-sm text-content-secondary">{referee}</span>
               ) : (
                 <span className="text-xs text-content-muted italic">Data not available</span>
               )}

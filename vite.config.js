@@ -1,12 +1,56 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath } from 'url'
 import { resolve } from 'path'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.svg', 'logo.webp'],
+      devOptions: {
+        enabled: true,
+      },
+      manifest: {
+        name: 'FIFA WC 2026 | Schedule & Live Scores',
+        short_name: 'FWC 2026',
+        description: 'FIFA World Cup 2026 schedule, live scores, standings, and bracket predictor.',
+        theme_color: '#08121f',
+        background_color: '#08121f',
+        display: 'fullscreen',
+        display_override: ['fullscreen', 'standalone'],
+        start_url: '/',
+        icons: [
+          { src: '/logo-192.webp', sizes: '192x192', type: 'image/webp' },
+          { src: '/logo-512.webp', sizes: '512x512', type: 'image/webp' },
+          { src: '/logo-512.webp', sizes: '512x512', type: 'image/webp', purpose: 'maskable' },
+        ],
+      },
+      workbox: {
+        // Precache only the app shell - JS/CSS/HTML/fonts/icons.
+        globPatterns: ['**/*.{js,css,html,svg,webp,woff2}'],
+        // CRITICAL:
+        // All data fetching stays governed by the app's own tiered cache
+        // (AppContext.jsx) - the service worker must not interfere with
+        // live-score freshness.
+        navigateFallbackDenylist: [/^\/api/],
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) =>
+              url.hostname.includes('worldcup26.ir') ||
+              url.hostname.includes('thesportsdb.com') ||
+              url.hostname.includes('wikipedia.org'),
+            handler: 'NetworkOnly',
+          },
+        ],
+      },
+    }),
+  ],
+
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
