@@ -51,7 +51,7 @@ export default function Layout() {
               <button
                 onClick={() => mainRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
                 title="Back to top"
-                className="absolute bottom-2 right-6 border border-navy-600 hover:border-navy-900 bg-navy-900/30 hover:bg-gold-500 hover:text-navy-900 backdrop-blur-sm p-2.5 text-white transition-colors hover:text-gold-400"
+                className="absolute bottom-2 right-6 border border-navy-600 hover:border-navy-900 bg-navy-900/30 hover:bg-gold-500 hover:text-navy-900 backdrop-blur-sm p-2.5 text-white transition-colors"
               >
                 <ArrowUp size={18} />
               </button>

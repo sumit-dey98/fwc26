@@ -2,16 +2,16 @@ import { useState } from 'react'
 import { X, Star, Search } from 'lucide-react'
 import { useApp } from '@context/AppContext'
 import TimezoneSelector from './TimezoneSelector'
-import { MOCK_DATA } from '@data/mockData'
 import Flag from '@components/ui/Flag'
 import { XCircle } from 'lucide-react'
 import { cn } from '@utils/cn'
 
 export default function SettingsDrawer({ isOpen, onClose }) {
-  const { favoriteTeam, setFavorite, timezone, fontScale, setFontScale } = useApp()
+  const { favoriteTeam, setFavorite, timezone, fontScale, setFontScale, teamByName } = useApp()
 
+  const allTeams = Object.values(teamByName)
   const [teamSearch, setTeamSearch] = useState('')
-  const filteredTeams = MOCK_DATA.teams.filter(t =>
+  const filteredTeams = allTeams.filter(t =>
     t.name.toLowerCase().includes(teamSearch.toLowerCase())
   )
 
@@ -62,9 +62,9 @@ export default function SettingsDrawer({ isOpen, onClose }) {
 
             {favoriteTeam && (
               <div className="absolute inset-x-0 top-0 h-11 flex items-center gap-2 px-3 bg-navy-900 border-b border-gold-500/30 z-10">
-                <Flag teamName={MOCK_DATA.teams.find(t => t.code === favoriteTeam)?.name ?? ''} size={16} />
+                <Flag teamName={allTeams.find(t => t.code === favoriteTeam)?.name ?? ''} size={16} />
                 <span className="text-sm font-bold text-gold-400 truncate">
-                  {MOCK_DATA.teams.find(t => t.code === favoriteTeam)?.name ?? favoriteTeam}
+                  {allTeams.find(t => t.code === favoriteTeam)?.name ?? favoriteTeam}
                 </span>
                 <button
                   onClick={() => setFavorite(null)}

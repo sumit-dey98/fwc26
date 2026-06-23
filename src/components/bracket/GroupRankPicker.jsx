@@ -1,18 +1,47 @@
-import { MOCK_DATA } from '@data/mockData'
+import { useApp } from '@context/AppContext'
 import Flag from '@components/ui/Flag'
+import { Wand2 } from 'lucide-react'
+import { computeGroupStandings, computeBestThirdPlacedGroups } from '@utils/standings'
 import { cn } from '@utils/cn'
 
 const GROUPS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
 
 export default function GroupRankPicker({ groupPicks, onChange, bestThirds, onToggleThird, maxBestThirds }) {
+  const { teamByName, fixtures } = useApp()
+  const allTeams = Object.values(teamByName)
+
+  // Overwrites existing manual picks with current real standings.
+  const handleAutoPick = () => {
+    GROUPS.forEach(g => {
+      const groupFixtures = fixtures.filter(f => f.stage === 'group-stage' && f.group === g)
+      const table = computeGroupStandings(groupFixtures, teamByName)
+      const top3 = table.slice(0, 3).map(r => r.team)
+      if (top3.length === 3) onChange(g, top3)
+    })
+
+    const bestGroups = computeBestThirdPlacedGroups(fixtures, teamByName, maxBestThirds)
+    bestThirds.filter(g => !bestGroups.includes(g)).forEach(onToggleThird)
+    bestGroups.filter(g => !bestThirds.includes(g)).forEach(onToggleThird)
+  }
+
+
   return (
     <div className="p-4">
-      <p className="text-xs text-content-muted mb-4">
-        Select the 1st, 2nd, and 3rd place team for each group to build your bracket prediction.
-      </p>
+      <div className="mb-4 flex gap-x-6 gap-y-2 items-center justify-between flex-wrap">
+        <p className="text-xs text-content-muted">
+          Select the 1st, 2nd, and 3rd place team for each group to build your bracket prediction.
+        </p>
+        <button
+          onClick={handleAutoPick}
+          className="px-3 py-2 border border-gold-500/60 text-navy-950 text-xs font-bold tracking-widest bg-gold-500 hover:bg-gold-400 transition-colors flex items-center gap-1.5 w-full sm:w-fit justify-center leading-none"
+        >
+          <Wand2 size='1em' /> Auto-Pick From Current Standings
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {GROUPS.map(g => {
-          const teams = MOCK_DATA.teams.filter(t => t.group === g)
+          const teams = allTeams.filter(t => t.group === g)
           const picks = groupPicks[g] ?? []
           return (
             <div key={g} className="bg-navy-800 border border-navy-600">

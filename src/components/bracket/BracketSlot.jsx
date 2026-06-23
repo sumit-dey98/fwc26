@@ -32,9 +32,9 @@ export default function BracketSlot({ fixture, predicted, onPick, predictMode })
               key={side}
               onClick={() => canPick && onPick && onPick(fixture.matchNumber, side)}
               className={cn(
-                'flex items-center gap-2 px-3 py-1.5 border-b last:border-0 border-navy-700',
+                'flex items-center gap-2 px-3 py-1.5 border-b last:border-b-0 border-navy-700',
                 canPick && 'cursor-pointer hover:bg-navy-700',
-                isPicked && !isDone && 'bg-gold-500/10 border-l-2 border-l-gold-500',
+                isPicked && !isDone && 'bg-green-500/10 border-l-2 border-l-green-500',
                 isWinner && 'border-l-2 border-l-gold-500',
               )}
             >

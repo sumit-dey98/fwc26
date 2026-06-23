@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { useApp } from '@context/AppContext'
 import { usePredictions } from '@hooks/usePredictions'
 import { resolvePredictedBracket } from '@utils/bracketResolver'
@@ -32,8 +32,21 @@ export default function BracketView() {
   const [bg, setBg] = useState(DEFAULT_BG)
   const { predictions, getPrediction, setPrediction, score, clearPredictions } = usePredictions()
   const [step, setStep] = useState('picks')
-  const [groupPicks, setGroupPicks] = useState({})
-  const [bestThirds, setBestThirds] = useState([])
+  const loadPersisted = (key, fallback) => {
+    try {
+      const v = localStorage.getItem(`wc26:${key}`)
+      return v != null ? JSON.parse(v) : fallback
+    } catch { return fallback }
+  }
+  const savePersisted = (key, val) => {
+    try { localStorage.setItem(`wc26:${key}`, JSON.stringify(val)) } catch { }
+  }
+
+  const [groupPicks, setGroupPicks] = useState(() => loadPersisted('groupPicks', {}))
+  const [bestThirds, setBestThirds] = useState(() => loadPersisted('bestThirds', []))
+
+  useEffect(() => { savePersisted('groupPicks', groupPicks) }, [groupPicks])
+  useEffect(() => { savePersisted('bestThirds', bestThirds) }, [bestThirds])
 
   const hdFrameRef = useRef(null)
   const qhdFrameRef = useRef(null)
@@ -56,6 +69,10 @@ export default function BracketView() {
     clearPredictions()
     setGroupPicks({})
     setBestThirds([])
+    try {
+      localStorage.removeItem('wc26:groupPicks')
+      localStorage.removeItem('wc26:bestThirds')
+    } catch { }
   }
 
   const { correct, total } = score()
