@@ -2,6 +2,34 @@
 
 FIFA World Cup 2026 schedule SPA built with Vite + React + Tailwind CSS.
 
+## Screenshots
+
+<table width="100%">
+  <tr>
+    <td colspan="3"><img src="https://res.cloudinary.com/sumitdey/image/upload/f_auto,q_auto,fl_immutable_cache/v1782244276/sumit-portfolio/assets/fwc2026/screens/fwc2026-desk_1.png" width="100%" /></td>
+  </tr>
+  <tr>
+    <td colspan="3"><img src="https://res.cloudinary.com/sumitdey/image/upload/f_auto,q_auto,fl_immutable_cache/v1782244277/sumit-portfolio/assets/fwc2026/screens/fwc2026-desk_2.png" width="100%" /></td>
+  </tr>
+  <tr>
+    <td colspan="3"><img src="https://res.cloudinary.com/sumitdey/image/upload/f_auto,q_auto,fl_immutable_cache/v1782244279/sumit-portfolio/assets/fwc2026/screens/fwc2026-desk_3.png" width="100%" /></td>
+  </tr>
+  <tr>
+    <td colspan="3"><img src="https://res.cloudinary.com/sumitdey/image/upload/f_auto,q_auto,fl_immutable_cache/v1782244281/sumit-portfolio/assets/fwc2026/screens/fwc2026-desk_4.png" width="100%" /></td>
+  </tr>
+  <tr>
+    <td colspan="3"><img src="https://res.cloudinary.com/sumitdey/image/upload/f_auto,q_auto,fl_immutable_cache/v1782244283/sumit-portfolio/assets/fwc2026/screens/fwc2026-desk_5.png" width="100%" /></td>
+  </tr>
+  <tr>
+    <td colspan="3"><img src="https://res.cloudinary.com/sumitdey/image/upload/f_auto,q_auto,fl_immutable_cache/v1782244284/sumit-portfolio/assets/fwc2026/screens/fwc2026-desk_6.png" width="100%" /></td>
+  </tr>
+  <tr>
+    <td width="33%"><img src="https://res.cloudinary.com/sumitdey/image/upload/f_auto,q_auto,fl_immutable_cache/v1782244286/sumit-portfolio/assets/fwc2026/screens/fwc2026-mobile_1.png" width="100%" /></td>
+    <td width="33%"><img src="https://res.cloudinary.com/sumitdey/image/upload/f_auto,q_auto,fl_immutable_cache/v1782244287/sumit-portfolio/assets/fwc2026/screens/fwc2026-mobile_2.png" width="100%" /></td>
+    <td width="33%"><img src="https://res.cloudinary.com/sumitdey/image/upload/f_auto,q_auto,fl_immutable_cache/v1782244288/sumit-portfolio/assets/fwc2026/screens/fwc2026-mobile_3.png" width="100%" /></td>
+  </tr>
+</table>
+
 ## Quick Start
 
 ```bash
