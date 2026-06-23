@@ -39,7 +39,7 @@ export default function MatchDropdownCard({ fixture }) {
       )}
 
       {(isDone || isLive) && (
-        <div className="grid grid-cols-2 gap-4 mb-3 border-t border-navy-600 pt-3">
+        <div className="grid grid-cols-2 gap-4 mb-3 border-t border-navy-900 pt-3">
           <div>
             {/* <p className="font-label text-2xs font-semibold uppercase tracking-widest text-gold-500 mb-2 truncate">
               {fixture.homeTeam}

@@ -124,15 +124,15 @@
     inset: 0;
     pointer-events: none;
     background: linear-gradient(105deg,
-        transparent 33.333%,
+        transparent 0%,
         rgba(255, 255, 255, 0.1) 50%,
-        transparent 66.667%);
-    transform: translateX(-150%);
-    transition: transform 0.45s ease-in;
+        transparent 100%);
+    transform: translateX(-150%); 
   }
 
   .gloss:hover::after {
     transform: translateX(150%);
+    transition: transform 0.6s ease-in;
   }
 
   /* Live left border blink */

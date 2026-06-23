@@ -145,7 +145,7 @@ export default function BracketView() {
             <Download size={14} /> Export <div className='absolute right-0 h-full px-1.5 flex items-center border-l border-navy-800'> <ChevronDown size={18} strokeWidth={2} className={exportOpen ? 'rotate-180 transition-transform' : 'transition-transform'} /> </div>
           </button>
           {exportOpen && (
-            <div className="absolute right-0 top-full mt-1 w-32 bg-navy-800 border border-navy-600 z-20">
+            <div className="absolute right-0 top-full mt-1 w-32 bg-navy-800 border border-gold-500/40 z-20">
               {exportOptions.map(({ label, action }) => (
                 <button
                   key={label}

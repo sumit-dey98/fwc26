@@ -31,14 +31,14 @@ export default function TeamStatCard({ fixtures, type }) {
 
   return (
     <div>
-      <div className="px-4 py-2.5 border-b border-navy-700 text-xs font-bold uppercase tracking-widest text-gold-500 font-label">
+      <div className="px-4 py-2.5 border-b border-navy-700 text-sm font-bold uppercase tracking-widest text-gold-500 font-label">
         {isAttack ? 'Goals Scored' : 'Goals Conceded (fewest first)'}
       </div>
       {sorted.slice(0, 16).map((t, i) => (
         <div key={t.name} className="flex items-center gap-3 px-4 py-2.5 border-b border-navy-800 hover:bg-navy-700 transition-colors">
           <span className="text-navy-500 text-xs tabular w-5 text-right flex-shrink-0">{i + 1}</span>
-          <Flag teamName={t.name} size={14} />
-          <span className="text-sm font-medium flex-1 truncate font-display tracking-wide mt-0.5">{t.name}</span>
+          <Flag teamName={t.name} size='1em' />
+          <span className="text-base font-medium flex-1 truncate font-display leading-none tracking-wider mt-0.5">{t.name}</span>
           <span className="text-base font-bold text-gold-500 tabular">
             {isAttack ? t.GF : t.GA}
           </span>

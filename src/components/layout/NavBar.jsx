@@ -177,13 +177,13 @@ export default function NavBar() {
       </div>
 
       {mobileOpen && (
-        <div className="absolute top-full left-0 right-0 bg-navy-800 border-b border-navy-700 z-40 lg:hidden animate-slide-down">
+        <div className="absolute top-full left-0 right-0 bg-navy-800 border-b border-navy-700 z-40 lg:hidden animate-slide-down h-[calc(100dvh-100%)] overflow-y-auto">
           {TABS.map(tab => (
             <button
               key={tab.id}
               onClick={() => handleTab(tab.id)}
               className={cn(
-                'w-full flex items-center px-5 py-5 border-b border-navy-900 last:border-0',
+                'w-full flex items-center px-5 py-5 border-b border-navy-900',
                 'font-label text-base font-semibold uppercase tracking-widest transition-colors text-left',
                 activeTab === tab.id
                   ? 'text-gold-500 bg-navy-700 border-l-2 border-l-gold-500 pl-[18px]'
