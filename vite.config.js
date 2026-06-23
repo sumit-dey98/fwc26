@@ -21,8 +21,7 @@ export default defineConfig({
         description: 'FIFA World Cup 2026 schedule, live scores, standings, and bracket predictor.',
         theme_color: '#08121f',
         background_color: '#08121f',
-        display: 'fullscreen',
-        display_override: ['fullscreen', 'standalone'],
+        display: 'standalone',
         start_url: '/',
         icons: [
           { src: '/logo-192.webp', sizes: '192x192', type: 'image/webp' },

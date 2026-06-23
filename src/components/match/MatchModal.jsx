@@ -104,14 +104,14 @@ export default function MatchModal() {
             </p>
           </div>
 
-          {/* Match Events — TheSportsDB timeline (goals, cards, subs) */}
+          {/* Match Events from TheSportsDB (goals, cards, subs) */}
           {(isDone || isLive) && (
             <div className="px-5 py-4 border-b border-navy-700">
               <p className="text-xs font-bold uppercase tracking-widest text-gold-500 mb-2">Match Events</p>
               {detailLoading ? (
                 <p className="text-xs text-content-muted italic">Loading...</p>
               ) : timeline.length === 0 ? (
-                <p className="text-xs text-content-muted italic">Data not available</p>
+                <p className="text-xs text-content-muted italic">Match yet to be started</p>
               ) : (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -143,7 +143,7 @@ export default function MatchModal() {
             </div>
           )}
 
-          {/* Lineups — real starting XI from TheSportsDB */}
+          {/* Lineups from TheSportsDB */}
           <div className="px-5 py-4 border-b border-navy-700">
             <p className="text-xs font-bold uppercase tracking-widest text-gold-500 mb-2">Lineups</p>
             {detailLoading ? (
@@ -160,7 +160,7 @@ export default function MatchModal() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Users size={16} className="text-content-muted" />
-                      <span className="text-xs text-content-muted italic">Data not available</span>
+                      <span className="text-xs text-content-muted italic">Match yet to be started</span>
                     </div>
                   </div>
                 ))}
@@ -170,7 +170,7 @@ export default function MatchModal() {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <Flag teamName={fixture.homeTeam} size={16} />
-                    <p className="text-sm font-display text-content-muted">{getDisplayName(fixture.homeTeam)}</p>
+                    <p className="text-sm font-display text-content-muted !leading-none">{getDisplayName(fixture.homeTeam)}</p>
                   </div>
                   <div className="space-y-1.5">
                     {homeLineup.map(p => (
@@ -201,14 +201,14 @@ export default function MatchModal() {
             )}
           </div>
 
-          {/* Match Statistics — new section */}
+          {/* Match Statistics */}
           {(isDone || isLive) && (
             <div className="px-5 py-4 border-b border-navy-700">
               <p className="text-xs font-bold uppercase tracking-widest text-gold-500 mb-3">Match Statistics</p>
               {detailLoading ? (
                 <p className="text-xs text-content-muted italic">Loading...</p>
               ) : stats.length === 0 ? (
-                <p className="text-xs text-content-muted italic">Data not available</p>
+                <p className="text-xs text-content-muted italic">Match yet to be started</p>
               ) : (
                 <div className="space-y-2.5">
                   {stats.map(s => {
@@ -243,7 +243,7 @@ export default function MatchModal() {
               ) : referee ? (
                 <span className="text-sm text-content-secondary">{referee}</span>
               ) : (
-                <span className="text-xs text-content-muted italic">Data not available</span>
+                <span className="text-xs text-content-muted italic">Match yet to be started</span>
               )}
             </div>
           </div>

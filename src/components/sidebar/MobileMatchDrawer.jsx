@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { ChevronUp } from 'lucide-react'
 import { useApp } from '@context/AppContext'
 import { cn } from '@utils/cn'
@@ -7,13 +7,29 @@ import MatchCard from '@components/match/MatchCard'
 import LiveScoreWidget from './LiveScoreWidget'
 import TodaysMatchesWidget from './TodaysMatchesWidget'
 
+const SWIPE_THRESHOLD = 100
+
 export default function MobileMatchDrawer() {
   const { fixtures, timezone } = useApp()
   const [expanded, setExpanded] = useState(false)
+  const touchStartY = useRef(null)
 
   const live = liveFixtures(fixtures)
   const liveIds = live.map(f => f.matchNumber)
   const upcoming = todayFixtures(fixtures, timezone).filter(f => !liveIds.includes(f.matchNumber))
+
+  const handleTouchStart = e => {
+    touchStartY.current = e.touches[0].clientY
+  }
+
+  const handleTouchEnd = e => {
+    if (touchStartY.current == null) return
+    const deltaY = e.changedTouches[0].clientY - touchStartY.current
+    touchStartY.current = null
+    if (Math.abs(deltaY) < SWIPE_THRESHOLD) return 
+    e.preventDefault()
+    setExpanded(deltaY < 0) 
+  }
 
   return (
     <div
@@ -25,16 +41,11 @@ export default function MobileMatchDrawer() {
     >
       <button
         onClick={() => setExpanded(v => !v)}
-        className="w-full flex flex-col items-center gap-1 py-1.5 flex-shrink-0 bg-navy-600 border-b border-navy-800"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        className="w-full flex flex-col items-center gap-1 py-1.5 flex-shrink-0 bg-gold-500 border-b border-navy-800"
       >
-        <span className="w-10 h-1 bg-navy-800" />
-        {/* <ChevronUp
-          size={16}
-          className={cn(
-            'text-content-muted transition-transform duration-300',
-            expanded ? 'rotate-180' : 'animate-bounce'
-          )}
-        /> */}
+        <span className="w-10 h-1 bg-gold-600" />
       </button>
 
       {expanded ? (
@@ -52,7 +63,7 @@ export default function MobileMatchDrawer() {
         </div>
       ) : (
         <div className="pb-2 ">
-              <p className="text-xs text-navy-800 italic p-4 bg-gold-500 font-medium">No live matches</p>
+              <p className="text-xs text-navy-500 italic p-4 bg-navy-800 font-medium">No live matches</p>
         </div>
       )}
     </div>

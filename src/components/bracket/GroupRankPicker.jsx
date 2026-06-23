@@ -47,7 +47,7 @@ export default function GroupRankPicker({ groupPicks, onChange, bestThirds, onTo
             <div key={g} className="bg-navy-800 border border-navy-600">
               <div className="px-3 py-2 text-base font-label font-bold uppercase tracking-widest text-navy-700 bg-gold-500 border-b border-navy-700 flex items-center justify-between">
                 <span>Group {g}</span>
-                <span className="text-2xs font-normal opacity-70">Rank 1st–3rd</span>
+                <span className="text-2xs font-normal">Rank 1st–3rd</span>
               </div>
               {teams.map(t => {
                 const rank = picks.indexOf(t.name) + 1
@@ -68,10 +68,10 @@ export default function GroupRankPicker({ groupPicks, onChange, bestThirds, onTo
                     <span className="text-base tracking-wider font-display font-medium !leading-none break-words mt-1">{t.name}</span>
                     {rank > 0 && (
                       <span className={cn(
-                        'text-2xs font-bold w-5 h-5 flex items-center justify-center flex-shrink-0',
-                        rank === 1 ? 'bg-gold-500 text-navy-950' :
-                          rank === 2 ? 'bg-navy-500 text-white' :
-                            'bg-navy-700 text-content-secondary border border-navy-500'
+                        'text-xs font-bold w-5 h-5 flex items-center justify-center flex-shrink-0 !leading-none font-display rounded-full  text-navy-950',
+                        rank === 1 ? 'bg-green-500' :
+                          rank === 2 ? 'bg-yellow-500' :
+                            'bg-orange-500'
                       )}>
                         {rank}
                       </span>

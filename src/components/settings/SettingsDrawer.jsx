@@ -68,7 +68,7 @@ export default function SettingsDrawer({ isOpen, onClose }) {
                 </span>
                 <button
                   onClick={() => setFavorite(null)}
-                  className="ml-auto text-2xs text-red-400 hover:text-red-500 transition-colors flex-shrink-0 leading-none"
+                  className="ml-auto text-xs text-red-400 hover:text-red-500 transition-colors flex-shrink-0 leading-none"
                 >
                   <XCircle size='1.5em' />
                 </button>
@@ -90,7 +90,7 @@ export default function SettingsDrawer({ isOpen, onClose }) {
                   <Flag teamName={t.name} size={14} />
                   <span className="text-base tracking-wider font-display font-medium !leading-none break-words">{t.name}</span>
                   <span className="text-2xs text-navy-500">Group {t.group}</span>
-                  {favoriteTeam === t.code && <Star size={11} fill="currentColor" className="text-gold-500 flex-shrink-0" />}
+                  {favoriteTeam === t.code && <Star size={11} fill="currentColor" className="text-gold-500 flex-shrink-0 -translate-y-[1px]" />}
                 </button>
               ))}
             </div>

@@ -47,7 +47,7 @@ export default function TeamsView() {
             key={t.code}
             onClick={() => openTeamModal(t.code)}
             className={cn(
-              'bg-navy-800 border p-4 text-left transition-colors gloss flex items-center justify-start gap-6 relative',
+              'bg-navy-800 border p-4 text-left transition-colors gloss flex items-start justify-start gap-6 relative',
               favoriteTeam === t.code
                 ? 'border-gold-500 bg-navy-700'
                 : 'border-navy-600 hover:border-gold-500/50'
