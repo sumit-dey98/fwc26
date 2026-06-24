@@ -21,7 +21,7 @@ export default function TodaysMatchesWidget() {
       ) : today.length === 0 ? (
           <div className="px-3 py-4 text-xs text-navy-500/80 italic">No more matches today</div>
       ) : (
-        <div className="overflow-y-auto flex-1">
+        <div className="overflow-y-auto flex-1 pb-2">
           {today.map(f => <MatchCard key={f.matchNumber} fixture={f} />)}
         </div>
       )}

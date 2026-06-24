@@ -44,7 +44,7 @@ export default function MatchModal() {
       onClick={closeModal}
     >
       <div
-        className="relative w-full max-w-2xl max-h-[90vh] bg-navy-800 border border-navy-600 animate-slide-down flex flex-col"
+        className="relative w-full max-w-2xl max-h-[90vh] bg-navy-800 border border-navy-600 animate-slide-down flex flex-col mx-4"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-navy-700 flex-shrink-0 bg-gold-500">
