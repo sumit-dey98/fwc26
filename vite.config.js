@@ -30,12 +30,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Precache only the app shell - JS/CSS/HTML/fonts/icons.
         globPatterns: ['**/*.{js,css,html,svg,webp,woff2}'],
-        // CRITICAL:
-        // All data fetching stays governed by the app's own tiered cache
-        // (AppContext.jsx) - the service worker must not interfere with
-        // live-score freshness.
         navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
           {
@@ -44,6 +39,49 @@ export default defineConfig({
               url.hostname.includes('thesportsdb.com') ||
               url.hostname.includes('wikipedia.org'),
             handler: 'NetworkOnly',
+          },
+          {
+            // Cache flags
+            // once a user has seen them at least once while online.
+            urlPattern: ({ url }) => url.hostname === 'flagcdn.com',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'flag-images',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 90 * 24 * 60 * 60, // Cache for 90 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            // Google Fonts stylesheet (the CSS that declares @font-face rules)
+            urlPattern: ({ url }) => url.hostname === 'fonts.googleapis.com',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-stylesheets',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 365 * 24 * 60 * 60, // Cache for a year
+              },
+            },
+          },
+          {
+            // The actual font files (woff2) the stylesheet above points to
+            urlPattern: ({ url }) => url.hostname === 'fonts.gstatic.com',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-webfonts',
+              expiration: {
+                maxEntries: 30,
+                maxAgeSeconds: 365 * 24 * 60 * 60,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
           },
         ],
       },
