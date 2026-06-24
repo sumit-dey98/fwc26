@@ -3,6 +3,7 @@ import { ArrowUp } from 'lucide-react'
 import NavBar from './NavBar'
 import Sidebar from './Sidebar'
 import MobileMatchDrawer from '@components/sidebar/MobileMatchDrawer'
+import OfflineBanner from '@components/ui/OfflineBanner'
 import GroupStageView from '@views/GroupStageView'
 import KnockoutView from '@views/KnockoutView'
 import FinalsView from '@views/FinalsView'
@@ -43,6 +44,7 @@ export default function Layout() {
   return (
     <div className="flex flex-col h-dvh overflow-hidden bg-navy-900">
       <NavBar />
+      <OfflineBanner />
       <div className="flex flex-1 overflow-hidden">
         <main ref={mainRef} className="relative flex-1 overflow-y-auto">
           {isLoading ? <Loader label="Loading schedule..." /> : <ActiveView />}

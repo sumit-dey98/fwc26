@@ -24,7 +24,12 @@ function hasLiveActivity(fixtures) {
 function getBreakpointDefaultFontScale() {
   if (typeof window === 'undefined') return 'md'
   return window.innerWidth < 1024 ? 'md'
-      : window.innerWidth < 1536 ? 'lg' : 'xl'
+    : window.innerWidth < 1536 ? 'lg' : 'xl'
+}
+
+function getInitialOfflineStatus() {
+  if (typeof navigator === 'undefined') return false
+  return !navigator.onLine
 }
 
 const load = (key, fallback = null) => {
@@ -46,6 +51,8 @@ const INIT = {
   isLoading: true,
   error: null,
   lastUpdated: null,
+  isOffline: getInitialOfflineStatus(),
+  usingCachedData: false,
   activeTab: tabFromPath(window.location.pathname),
   selectedGroup: 'All',
   expandedMatchId: null,
@@ -74,6 +81,8 @@ function reducer(state, { type, payload }) {
       return { ...state, isLoading: false, error: payload }
     case 'LIVE_UPDATE':
       return { ...state, fixtures: payload, lastUpdated: new Date() }
+    case 'SET_DATA_STATUS':
+      return { ...state, ...payload }
     case 'SET_TAB':
       return { ...state, activeTab: payload, expandedMatchId: null }
     case 'SET_GROUP':
@@ -134,6 +143,9 @@ export function AppProvider({ children }) {
   // current activity without re-subscribing on every fixtures change.
   const fixturesRef = useRef(state.fixtures)
   useEffect(() => { fixturesRef.current = state.fixtures }, [state.fixtures])
+
+  // Holds the load() function so the online-reconnect listener can re-invoke it
+  const loadRef = useRef(null)
 
   // Apply saved font scale on mount
   useEffect(() => {
@@ -243,6 +255,14 @@ export function AppProvider({ children }) {
       throw new Error('All stadium sources failed')
     }
 
+    function serveFromCache(cachedStadiumMap, cachedTeamByName, shell, finished, { offline, usingCache }) {
+      const fixtures = [...finished, ...(shell?.fixtures ?? [])].sort((a, b) => a.matchNumber - b.matchNumber)
+      dispatch({ type: 'STADIUMS_LOADED', payload: { list: Object.values(cachedStadiumMap ?? {}), map: cachedStadiumMap ?? {} } })
+      dispatch({ type: 'FIXTURES_LOADED', payload: fixtures })
+      dispatch({ type: 'TEAMS_LOADED', payload: cachedTeamByName ?? {} })
+      dispatch({ type: 'SET_DATA_STATUS', payload: { isOffline: offline, usingCachedData: usingCache } })
+    }
+
     async function load() {
       if (USE_MOCK) {
         const mockTeamByName = Object.fromEntries(MOCK_DATA.teams.map(t => [t.name, t]))
@@ -255,19 +275,34 @@ export function AppProvider({ children }) {
 
       const cachedStadiumMap = loadForever('stadiums')
       const cachedTeamByName = loadForever('teams')
-      const needStadiums = !cachedStadiumMap
-      const needTeams = !cachedTeamByName
-
       const shell = readShell()
       const finishedObj = loadFinished()
       const finished = Object.values(finishedObj)
+      const hasAnyCache = shell || finished.length || cachedStadiumMap || cachedTeamByName
 
-      // Fully servable from cache | skip the games fetch entirely.
+      // Offline: don't attempt a fetch at all — serve whatever cache exists immediately,
+      // even if it's technically stale by Tier 3's rules. Stale-but-real data beats nothing.
+      if (!navigator.onLine) {
+        if (hasAnyCache) {
+          serveFromCache(cachedStadiumMap, cachedTeamByName, shell, finished, { offline: true, usingCache: true })
+        } else {
+          dispatch({ type: 'FIXTURES_LOADED', payload: MOCK_DATA.fixtures })
+          dispatch({ type: 'SET_DATA_STATUS', payload: { isOffline: true, usingCachedData: true } })
+        }
+        return
+      }
+
+      const needStadiums = !cachedStadiumMap
+      const needTeams = !cachedTeamByName
+
+      // Fully servable from fresh-enough cache | skip the games fetch entirely.
+      // This is normal efficient caching, NOT a degraded state — don't flag usingCachedData.
       if (!shellIsStale(shell) && cachedStadiumMap && cachedTeamByName) {
         const fixtures = [...finished, ...shell.fixtures].sort((a, b) => a.matchNumber - b.matchNumber)
         dispatch({ type: 'STADIUMS_LOADED', payload: { list: Object.values(cachedStadiumMap), map: cachedStadiumMap } })
         dispatch({ type: 'FIXTURES_LOADED', payload: fixtures })
         dispatch({ type: 'TEAMS_LOADED', payload: cachedTeamByName })
+        dispatch({ type: 'SET_DATA_STATUS', payload: { isOffline: false, usingCachedData: false } })
         return
       }
 
@@ -279,13 +314,11 @@ export function AppProvider({ children }) {
 
       if (gamesResult.status === 'rejected') {
         console.warn('Games API failed:', gamesResult.reason.message)
-        if (shell || finished.length) {
-          const fixtures = [...finished, ...(shell?.fixtures ?? [])].sort((a, b) => a.matchNumber - b.matchNumber)
-          dispatch({ type: 'STADIUMS_LOADED', payload: { list: Object.values(cachedStadiumMap ?? {}), map: cachedStadiumMap ?? {} } })
-          dispatch({ type: 'FIXTURES_LOADED', payload: fixtures })
-          dispatch({ type: 'TEAMS_LOADED', payload: cachedTeamByName ?? {} })
+        if (hasAnyCache) {
+          serveFromCache(cachedStadiumMap, cachedTeamByName, shell, finished, { offline: false, usingCache: true })
         } else {
           dispatch({ type: 'FIXTURES_LOADED', payload: MOCK_DATA.fixtures })
+          dispatch({ type: 'SET_DATA_STATUS', payload: { isOffline: false, usingCachedData: true } })
         }
         return
       }
@@ -308,9 +341,29 @@ export function AppProvider({ children }) {
       dispatch({ type: 'STADIUMS_LOADED', payload: { list: Object.values(stadiumMap), map: stadiumMap } })
       dispatch({ type: 'FIXTURES_LOADED', payload: allFixtures })
       dispatch({ type: 'TEAMS_LOADED', payload: teamByName })
+      dispatch({ type: 'SET_DATA_STATUS', payload: { isOffline: false, usingCachedData: false } })
     }
 
+    loadRef.current = load
     load()
+  }, [])
+
+  // Refetch automatically when connectivity returns; flip isOffline instantly either way
+  // so the UI banner responds immediately, even before the refetch completes.
+  useEffect(() => {
+    const handleOnline = () => {
+      dispatch({ type: 'SET_DATA_STATUS', payload: { isOffline: false } })
+      loadRef.current?.()
+    }
+    const handleOffline = () => {
+      dispatch({ type: 'SET_DATA_STATUS', payload: { isOffline: true, usingCachedData: true } })
+    }
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
   }, [])
 
   // Poll live scores

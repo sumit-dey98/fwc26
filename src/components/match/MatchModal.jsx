@@ -111,7 +111,7 @@ export default function MatchModal() {
               {detailLoading ? (
                 <p className="text-xs text-content-muted italic">Loading...</p>
               ) : timeline.length === 0 ? (
-                <p className="text-xs text-content-muted italic">Match yet to be started</p>
+                <p className="text-xs text-content-muted italic">Data not available</p>
               ) : (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -160,7 +160,7 @@ export default function MatchModal() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Users size={16} className="text-content-muted" />
-                      <span className="text-xs text-content-muted italic">Match yet to be started</span>
+                      <span className="text-xs text-content-muted italic">Data not available</span>
                     </div>
                   </div>
                 ))}
@@ -208,7 +208,7 @@ export default function MatchModal() {
               {detailLoading ? (
                 <p className="text-xs text-content-muted italic">Loading...</p>
               ) : stats.length === 0 ? (
-                <p className="text-xs text-content-muted italic">Match yet to be started</p>
+                <p className="text-xs text-content-muted italic">Data not available</p>
               ) : (
                 <div className="space-y-2.5">
                   {stats.map(s => {
@@ -243,7 +243,7 @@ export default function MatchModal() {
               ) : referee ? (
                 <span className="text-sm text-content-secondary">{referee}</span>
               ) : (
-                <span className="text-xs text-content-muted italic">Match yet to be started</span>
+                <span className="text-xs text-content-muted italic">Data not available</span>
               )}
             </div>
           </div>
