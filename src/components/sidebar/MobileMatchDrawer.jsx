@@ -36,7 +36,7 @@ export default function MobileMatchDrawer() {
       className={cn(
         'lg:hidden flex-shrink-0 bg-navy-950 border-t border-navy-700',
         'overflow-hidden transition-[max-height] duration-300',
-        expanded ? 'max-h-[70vh] flex flex-col' : 'max-h-[140px]'
+        expanded ? 'max-h-[90vh] flex flex-col' : 'max-h-[140px]'
       )}
     >
       <button

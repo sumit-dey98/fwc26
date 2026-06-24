@@ -31,7 +31,7 @@ export default function TeamModal({ team, onClose }) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg max-h-[90vh] bg-navy-800 border border-navy-600 animate-slide-down flex flex-col"
+        className="w-full max-w-lg max-h-[90vh] bg-navy-800 border border-navy-600 animate-slide-down flex flex-col mx-4"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-navy-700 flex-shrink-0 bg-gold-500">
