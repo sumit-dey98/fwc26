@@ -4,7 +4,7 @@
  * using the user's group picks, best-thirds selection, and match predictions.
  *
  * If a fixture's team field is already a real team name (not a placeholder
- * pattern — either because reality has resolved it, or it never was one),
+ * pattern - either because reality has resolved it, or it never was one),
  * it's left untouched.
  */
 

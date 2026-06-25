@@ -1,4 +1,4 @@
-/** Conditional className helper — no external dep needed */
+/** Conditional className helper - no external dep needed */
 export const cn = (...args) =>
   args
     .flat(Infinity)

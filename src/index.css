@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    /* Raw RGB — Tailwind uses these for opacity variants (bg-navy-900/50 etc.) */
+    /* Raw RGB - Tailwind uses these for opacity variants (bg-navy-900/50 etc.) */
     --c-navy-950: 6 16 30;
     --c-navy-900: 8 18 31;
     --c-navy-800: 6 33 75;

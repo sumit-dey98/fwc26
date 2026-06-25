@@ -62,7 +62,7 @@ export const flagClass = (teamName) => {
   return `fi fi-${iso}`
 }
 
-/** Get team name from code — for favorite matching */
+/** Get team name from code - for favorite matching */
 export const teamNameFromCode = code =>
   TEAM_BY_CODE[code]?.name ?? null
 

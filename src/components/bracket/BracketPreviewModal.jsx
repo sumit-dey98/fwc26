@@ -188,7 +188,7 @@ export default function BracketPreviewModal({
 
           <div>
             <label className="text-xs font-bold font-label uppercase tracking-wider text-content-muted mb-1">
-              Image opacity — {Math.round(bg.opacity * 100)}%
+              Image opacity - {Math.round(bg.opacity * 100)}%
             </label>
             <input
               type="range"

@@ -14,7 +14,7 @@ export default function Flag({ teamName, size = 20, className = '' }) {
   const team = teamByName[teamName]
   const { value, unit } = parseSize(size)
   const width = `${value}${unit}`
-  const height = `${value * 0.75}${unit}`
+  const height = `${value * 0.6}${unit}`
 
   if (team?.flag) {
     return (

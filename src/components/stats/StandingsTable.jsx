@@ -1,3 +1,4 @@
+import { useApp } from '@context/AppContext'
 import { computeGroupStandings } from '@utils/standings'
 import Flag from '@components/ui/Flag'
 import { cn } from '@utils/cn'
@@ -6,8 +7,15 @@ const COLS = ['P', 'W', 'D', 'L', 'GF', 'GA', 'GD', 'Pts']
 
 const sticky = 'sticky z-10 bg-navy-600 transition-colors'
 
-export default function StandingsTable({ fixtures }) {
-  const rows = computeGroupStandings(fixtures)
+/**
+ * Prefers the API-driven standings already computed in context
+ * (state.groupStandings) - the same source Auto-Pick reads from -
+ * falling back to a client-side calc only if that group isn't present yet
+ * (e.g. very first render before data has loaded).
+ */
+export default function StandingsTable({ fixtures, group }) {
+  const { groupStandings } = useApp()
+  const rows = groupStandings?.[group] ?? computeGroupStandings(fixtures)
 
   if (!rows.length) return (
     <div className="px-4 py-6 text-xs text-content-muted italic">No results yet</div>
@@ -54,8 +62,8 @@ export default function StandingsTable({ fixtures }) {
               )}>
                 {i + 1}
               </td>
-              <td className={cn('py-3 left-7 text-center', sticky)}>
-                <Flag teamName={row.team} size='1.5em' className="flex-shrink-0" />
+              <td className={cn('py-3 left-7 text-center !leading-none', sticky)}>
+                <Flag teamName={row.team} size='1.6em' className="flex-shrink-0" />
               </td>
               <td className="px-2 py-3 bg-navy-600">
                 <span className="font-medium truncate block font-display tracking-wider text-base">{row.team}</span>

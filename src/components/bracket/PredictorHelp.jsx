@@ -27,7 +27,7 @@ export default function PredictorHelp() {
             <p className="text-2xs font-bold uppercase tracking-widest text-gold-400 mb-1.5">How the real bracket works</p>
             <ul className="text-xs text-content-secondary space-y-1.5 list-disc pl-4">
               <li>12 groups of 4 teams play a round-robin group stage.</li>
-              <li>The top 2 from each group automatically advance — 24 teams.</li>
+              <li>The top 2 from each group automatically advance - 24 teams.</li>
               <li>The 8 best 3rd-place teams (compared across all 12 groups by points, then goal difference, then goals scored) fill the remaining spots.</li>
               <li>32 teams total enter Round of 32.</li>
             </ul>
@@ -37,10 +37,10 @@ export default function PredictorHelp() {
             <p className="text-2xs font-bold uppercase tracking-widest text-gold-400 mb-1.5">How the predictor works</p>
             <ul className="text-xs text-content-secondary space-y-1.5 list-disc pl-4">
               <li><strong className="text-content-primary">Group Picks:</strong> click teams in each group to rank your predicted 1st, 2nd, and 3rd.</li>
-              <li><strong className="text-content-primary">Auto-Pick:</strong> instantly fill all 12 groups using the current real standings — great as a starting point, then adjust manually.</li>
+              <li><strong className="text-content-primary">Auto-Pick:</strong> instantly fill all 12 groups using the current real standings - great as a starting point, then adjust manually.</li>
               <li><strong className="text-content-primary">Best Thirds:</strong> from your 12 predicted 3rd-place teams, pick exactly 8 strong enough to also qualify.</li>
-              <li><strong className="text-content-primary">Knockout Bracket:</strong> builds a predicted bracket from your picks, resolving each round as you predict match winners. This isn't the real bracket — check "Live Bracket" in The Finals tab for actual results.</li>
-              <li><strong className="text-content-primary">Saved automatically</strong> — your picks persist between visits. Reset clears everything.</li>
+              <li><strong className="text-content-primary">Knockout Bracket:</strong> builds a predicted bracket from your picks, resolving each round as you predict match winners. This isn't the real bracket - check "Live Bracket" in The Finals tab for actual results.</li>
+              <li><strong className="text-content-primary">Saved automatically</strong> - your picks persist between visits. Reset clears everything.</li>
             </ul>
           </div>
         </div>

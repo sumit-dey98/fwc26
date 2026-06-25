@@ -21,7 +21,7 @@ export function adaptFixtures(apiResponse) {
     awayTeam:    f.awayTeam,
     stadium:     f.stadium,
     hostCity:    f.hostCity,
-    // Augmented fields — filled by live API
+    // Augmented fields - filled by live API
     status:  deriveStatus(f.kickoffUtc),
     score:   { home: null, away: null },
     minute:  null,
