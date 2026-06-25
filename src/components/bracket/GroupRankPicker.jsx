@@ -1,29 +1,28 @@
 import { useApp } from '@context/AppContext'
 import Flag from '@components/ui/Flag'
 import { Wand2 } from 'lucide-react'
-import { computeGroupStandings, computeBestThirdPlacedGroups } from '@utils/standings'
+import { bestThirdsFromStandings } from '@utils/standings'
 import { cn } from '@utils/cn'
 
 const GROUPS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
 
 export default function GroupRankPicker({ groupPicks, onChange, bestThirds, onToggleThird, maxBestThirds }) {
-  const { teamByName, fixtures } = useApp()
+  const { teamByName, groupStandings } = useApp()
   const allTeams = Object.values(teamByName)
 
-  // Overwrites existing manual picks with current real standings.
+  // Overwrites existing manual picks with the same standings shown on the Stats
+  // tab — one source of truth, so this can never disagree with what's displayed.
   const handleAutoPick = () => {
     GROUPS.forEach(g => {
-      const groupFixtures = fixtures.filter(f => f.stage === 'group-stage' && f.group === g)
-      const table = computeGroupStandings(groupFixtures, teamByName)
+      const table = groupStandings[g] ?? []
       const top3 = table.slice(0, 3).map(r => r.team)
       if (top3.length === 3) onChange(g, top3)
     })
 
-    const bestGroups = computeBestThirdPlacedGroups(fixtures, teamByName, maxBestThirds)
+    const bestGroups = bestThirdsFromStandings(groupStandings, teamByName, maxBestThirds)
     bestThirds.filter(g => !bestGroups.includes(g)).forEach(onToggleThird)
     bestGroups.filter(g => !bestThirds.includes(g)).forEach(onToggleThird)
   }
-
 
   return (
     <div className="p-4">
@@ -64,7 +63,7 @@ export default function GroupRankPicker({ groupPicks, onChange, bestThirds, onTo
                       onChange(g, next)
                     }}
                   >
-                    <Flag teamName={t.name} size={14} />
+                    <Flag teamName={t.name} size='1.2em' />
                     <span className="text-base tracking-wider font-display font-medium !leading-none break-words mt-1">{t.name}</span>
                     {rank > 0 && (
                       <span className={cn(

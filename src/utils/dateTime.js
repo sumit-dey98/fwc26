@@ -1,5 +1,5 @@
 /**
- * Date/time utilities — all times stored as UTC, displayed in user's timezone.
+ * Date/time utilities - all times stored as UTC, displayed in user's timezone.
  */
 
 /** Format a UTC ISO string to local time in given timezone */

@@ -60,7 +60,7 @@ function TeamSide({ name, align, isLive }) {
   const isRight = align === 'right'
   return (
     <div className={cn('flex items-center gap-2 min-w-0 text-base', isRight && 'flex-row-reverse')}>
-      {isResolved && <Flag teamName={name} size='1em' className="flex-shrink-0" />}
+      {isResolved && <Flag teamName={name} size='1.2em' className="flex-shrink-0" />}
       <span className={cn(
         'tracking-wider font-display font-medium !leading-none break-words',
         isLive && 'animate-live-blink',

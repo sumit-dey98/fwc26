@@ -45,7 +45,7 @@ export default function MatchDropdownCard({ fixture }) {
               {fixture.homeTeam}
             </p> */}
             {homeEvents.length === 0
-              ? <p className="text-2xs text-content-muted">—</p>
+              ? <p className="text-2xs text-content-muted">-</p>
               : homeEvents.map((ev, i) => (
                   <div key={i} className="flex items-center gap-1.5 text-xs text-content-secondary py-0.5">
                     <EventIcon type={ev.type} />
@@ -61,7 +61,7 @@ export default function MatchDropdownCard({ fixture }) {
               {fixture.awayTeam}
             </p> */}
             {awayEvents.length === 0
-              ? <p className="text-2xs text-content-muted">—</p>
+              ? <p className="text-2xs text-content-muted">-</p>
               : awayEvents.map((ev, i) => (
                   <div key={i} className="flex items-center justify-end gap-1.5 text-xs text-content-secondary py-0.5">
                     {ev.type === 'og' && <span className="text-content-muted">(og)</span>}

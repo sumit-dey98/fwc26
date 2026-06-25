@@ -38,18 +38,18 @@ function headToHeadStats(teamA, teamB, fixtures) {
 
 /**
  * Compute standings for one group, applying FIFA's official tie-break order:
- *   Step One — head-to-head points, then GD, then goals scored (teams concerned only)
- *   Step Two — overall goal difference, then overall goals scored
- *   (Step Two continues with disciplinary points, which we don't track, then
- *    FIFA ranking, which we apply here as a final fallback since fifaRank is available)
+ *   Step One - head-to-head points, then GD, then goals scored (teams concerned only)
+ *   Step Two - overall goal difference, then overall goals scored
+ *   (Step Two continues with disciplinary points, which isn't tracked here, then
+ *    FIFA ranking, which is applied here as a final fallback since fifaRank is available)
  *
  * LIMITATION: Step One's head-to-head comparison is only applied when exactly
  * two teams share the same points total. FIFA's real procedure also reapplies
  * these criteria recursively to 3-or-4-way ties via a mini-league among just
- * the tied teams — that recursive case isn't implemented here, and falls
+ * the tied teams - that recursive case isn't implemented here, and falls
  * through directly to Step Two (overall GD/GF) instead.
  *
- * @param {object} teamByName — optional, used only for the final FIFA-rank tiebreak
+ * @param {object} teamByName - optional, used only for the final FIFA-rank tiebreak
  */
 export function computeGroupStandings(groupFixtures, teamByName = {}) {
   const table = {}
@@ -98,15 +98,15 @@ export function computeGroupStandings(groupFixtures, teamByName = {}) {
     .sort((a, b) => {
       if (b.Pts !== a.Pts) return b.Pts - a.Pts
 
-      // Step One — head-to-head (only set when exactly 2 teams tied on points)
+      // Step One - head-to-head (only set when exactly 2 teams tied on points)
       const h2hDiff = (b._h2hRank ?? 0) - (a._h2hRank ?? 0)
       if (h2hDiff !== 0) return h2hDiff
 
-      // Step Two — overall goal difference, then overall goals scored
+      // Step Two - overall goal difference, then overall goals scored
       if (b.GD !== a.GD) return b.GD - a.GD
       if (b.GF !== a.GF) return b.GF - a.GF
 
-      // Final fallback — FIFA ranking (lower number = better), if provided
+      // Final fallback - FIFA ranking (lower number = better), if provided
       const rankA = teamByName[a.team]?.fifaRank
       const rankB = teamByName[b.team]?.fifaRank
       if (rankA != null && rankB != null) return rankA - rankB
@@ -156,6 +156,34 @@ export function computeBestThirdPlacedGroups(fixtures, teamByName = {}, n = 8) {
       const table = computeGroupStandings(groupFixtures, teamByName)
       const thirdRow = table[2]
       return thirdRow ? { group: g, ...thirdRow } : null
+    })
+    .filter(Boolean)
+
+  thirds.sort((a, b) => {
+    if (b.Pts !== a.Pts) return b.Pts - a.Pts
+    if (b.GD !== a.GD) return b.GD - a.GD
+    if (b.GF !== a.GF) return b.GF - a.GF
+    const rankA = teamByName[a.team]?.fifaRank
+    const rankB = teamByName[b.team]?.fifaRank
+    if (rankA != null && rankB != null) return rankA - rankB
+    return 0
+  })
+
+  return thirds.slice(0, n).map(t => t.group)
+}
+
+/**
+ * Same "best N third-placed teams" ranking as computeBestThirdPlacedGroups,
+ * but operating on ALREADY-COMPUTED standings tables (e.g. the live API-driven
+ * groupStandings in context) instead of recomputing from raw fixtures.
+ * Keeps the predictor's Auto-Pick consistent with whatever the Stats tab
+ * is actually displaying - one source of truth, not two parallel calculations.
+ */
+export function bestThirdsFromStandings(groupStandings, teamByName = {}, n = 8) {
+  const thirds = Object.entries(groupStandings)
+    .map(([group, rows]) => {
+      const thirdRow = rows[2]
+      return thirdRow ? { group, ...thirdRow } : null
     })
     .filter(Boolean)
 

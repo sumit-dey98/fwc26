@@ -25,7 +25,7 @@ const MOCK_BY_CODE = Object.fromEntries(
 function getUtcOffset(stadium) {
   if (!stadium) return -5
   const { country_en, region } = stadium
-  if (country_en === 'Mexico') return -6   // CST — Mexico stopped DST
+  if (country_en === 'Mexico') return -6   // CST - Mexico stopped DST
   if (country_en === 'Canada') return region === 'Western' ? -7 : -4
   // United States (summer DST)
   if (region === 'Eastern') return -4   // EDT
@@ -34,7 +34,7 @@ function getUtcOffset(stadium) {
   return -5
 }
 
-/** "MM/DD/YYYY HH:MM" → "YYYY-MM-DD" (venue local date — used for schedule grouping) */
+/** "MM/DD/YYYY HH:MM" → "YYYY-MM-DD" (venue local date - used for schedule grouping) */
 function parseVenueDate(localDate) {
   const [d] = localDate.split(' ')
   const [mm, dd, yyyy] = d.split('/')
@@ -176,7 +176,7 @@ export function adaptGames(gamesResponse, stadiumMap = {}) {
     .sort((a, b) => a.matchNumber - b.matchNumber)
 }
 
-/** Merge fresh poll data into existing fixtures — only updates live fields */
+/** Merge fresh poll data into existing fixtures - only updates live fields */
 export function mergeLiveScores(fixtures, gamesResponse, stadiumMap = {}) {
   const fresh = new Map(adaptGames(gamesResponse, stadiumMap).map(f => [f.matchNumber, f]))
   return fixtures.map(f => {
@@ -184,4 +184,32 @@ export function mergeLiveScores(fixtures, gamesResponse, stadiumMap = {}) {
     if (!u) return f
     return { ...f, status: u.status, score: u.score, minute: u.minute, events: u.events }
   })
+}
+
+/** Map team_id (string, e.g. "1") -> full team name, from /get/teams response */
+export function buildTeamIdToName(teamsResponse) {
+  return Object.fromEntries(
+    (teamsResponse.teams ?? []).map(t => [t.id, t.name_en])
+  )
+}
+
+/**
+ * Build standings tables from /get/groups - the API's own computed standings,
+ * already including server-side tie-breaking. Each group's teams array
+ * arrives pre-sorted; we apply a defensive re-sort here as a safety net using
+ * only Step Two (overall GD, then GF) - NOT full head-to-head - since this is
+ * meant to catch gross ordering errors, not replace the API's own tie-break logic.
+ */
+export function buildGroupStandings(groupsResponse, teamIdToName) {
+  const result = {}
+  for (const g of groupsResponse.groups ?? []) {
+    const rows = (g.teams ?? []).map(t => ({
+      team: teamIdToName[t.team_id] ?? `Team ${t.team_id}`,
+      P: parseInt(t.mp), W: parseInt(t.w), D: parseInt(t.d), L: parseInt(t.l),
+      GF: parseInt(t.gf), GA: parseInt(t.ga), GD: parseInt(t.gd), Pts: parseInt(t.pts),
+    }))
+    rows.sort((a, b) => b.Pts - a.Pts || b.GD - a.GD || b.GF - a.GF)
+    result[g.name] = rows
+  }
+  return result
 }

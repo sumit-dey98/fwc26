@@ -1,15 +1,15 @@
 import { createContext, useContext, useReducer, useEffect, useCallback, useRef } from 'react'
 import { TAB_TO_PATH, tabFromPath } from '@utils/routes'
 import { MOCK_DATA } from '@data/mockData'
-import { adaptGames, buildTeamByName, buildStadiumMap, mergeLiveScores } from '@utils/adapters/worldcup26Adapter'
-
+import { adaptGames, buildTeamByName, buildStadiumMap, mergeLiveScores, buildTeamIdToName, buildGroupStandings } from '@utils/adapters/worldcup26Adapter'
+import { computeAllStandings } from '@utils/standings'
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 const API_BASE = import.meta.env.VITE_LIVE_API_BASE ?? ''
 const LS = key => `wc26:${key}`
 
 // Tier 4: adaptive live-poll cadence
-const POLL_BASE_MS = 30_000          // base tick — cheap, just checks activity
+const POLL_BASE_MS = 30_000          // base tick - cheap, just checks activity
 const POLL_IDLE_TICKS = 10           // 10 * 30s = 5 min when nothing is happening
 const SOON_MS = 5 * 60 * 1000        // "starting soon" window
 
@@ -45,6 +45,7 @@ const save = (key, val) => {
 
 const INIT = {
   fixtures: [],
+  groupStandings: {},
   teamByName: {},
   stadiums: [],
   stadiumMap: {},
@@ -75,6 +76,8 @@ function reducer(state, { type, payload }) {
       return { ...state, fixtures: payload, isLoading: false, error: null }
     case 'TEAMS_LOADED':
       return { ...state, teamByName: payload }
+    case 'GROUP_STANDINGS_LOADED':
+      return { ...state, groupStandings: payload }
     case 'STADIUMS_LOADED':
       return { ...state, stadiums: payload.list, stadiumMap: payload.map }
     case 'FIXTURES_ERROR':
@@ -197,6 +200,20 @@ export function AppProvider({ children }) {
       return merged
     }
 
+    // Group standings | sessionStorage, refetched alongside live poll + initial load.
+    // No staleness heuristic needed - refetch cadence matches pollLive's.
+    const GROUPS_KEY = 'wc26:groupStandings'
+
+    function readGroupsCache() {
+      try {
+        const raw = sessionStorage.getItem(GROUPS_KEY)
+        return raw ? JSON.parse(raw) : null
+      } catch { return null }
+    }
+    function writeGroupsCache(standings) {
+      try { sessionStorage.setItem(GROUPS_KEY, JSON.stringify(standings)) } catch { }
+    }
+
     // Tier 3: upcoming/live shell | sessionStorage, event-triggered refetch.
     const SHELL_KEY = 'wc26:shell'
     const SHELL_TTL = 6 * 60 * 60 * 1000 // 6h fallback safety net
@@ -270,6 +287,7 @@ export function AppProvider({ children }) {
         dispatch({ type: 'STADIUMS_LOADED', payload: { list: MOCK_DATA.stadiums, map: mockStadiumMap } })
         dispatch({ type: 'TEAMS_LOADED', payload: mockTeamByName })
         dispatch({ type: 'FIXTURES_LOADED', payload: MOCK_DATA.fixtures })
+        dispatch({ type: 'GROUP_STANDINGS_LOADED', payload: computeAllStandings(MOCK_DATA.fixtures, mockTeamByName) })
         return
       }
 
@@ -280,14 +298,20 @@ export function AppProvider({ children }) {
       const finished = Object.values(finishedObj)
       const hasAnyCache = shell || finished.length || cachedStadiumMap || cachedTeamByName
 
-      // Offline: don't attempt a fetch at all — serve whatever cache exists immediately,
+      // Offline: don't attempt a fetch at all - serve whatever cache exists immediately,
       // even if it's technically stale by Tier 3's rules. Stale-but-real data beats nothing.
       if (!navigator.onLine) {
         if (hasAnyCache) {
           serveFromCache(cachedStadiumMap, cachedTeamByName, shell, finished, { offline: true, usingCache: true })
+          const cachedGroups = readGroupsCache()
+          dispatch({
+            type: 'GROUP_STANDINGS_LOADED',
+            payload: cachedGroups ?? computeAllStandings([...finished, ...(shell?.fixtures ?? [])], cachedTeamByName ?? {}),
+          })
         } else {
           dispatch({ type: 'FIXTURES_LOADED', payload: MOCK_DATA.fixtures })
           dispatch({ type: 'SET_DATA_STATUS', payload: { isOffline: true, usingCachedData: true } })
+          dispatch({ type: 'GROUP_STANDINGS_LOADED', payload: computeAllStandings(MOCK_DATA.fixtures, {}) })
         }
         return
       }
@@ -296,7 +320,7 @@ export function AppProvider({ children }) {
       const needTeams = !cachedTeamByName
 
       // Fully servable from fresh-enough cache | skip the games fetch entirely.
-      // This is normal efficient caching, NOT a degraded state — don't flag usingCachedData.
+      // This is normal efficient caching, NOT a degraded state - don't flag usingCachedData.
       if (!shellIsStale(shell) && cachedStadiumMap && cachedTeamByName) {
         const fixtures = [...finished, ...shell.fixtures].sort((a, b) => a.matchNumber - b.matchNumber)
         dispatch({ type: 'STADIUMS_LOADED', payload: { list: Object.values(cachedStadiumMap), map: cachedStadiumMap } })
@@ -306,19 +330,26 @@ export function AppProvider({ children }) {
         return
       }
 
-      const [gamesResult, teamsResult, stadiumsResult] = await Promise.allSettled([
+      const [gamesResult, teamsResult, stadiumsResult, groupsResult] = await Promise.allSettled([
         fetchWithRetry(`${API_BASE}/get/games`),
         needTeams ? fetchWithRetry(`${API_BASE}/get/teams`) : Promise.resolve(null),
         needStadiums ? fetchStadiums() : Promise.resolve(null),
+        fetchWithRetry(`${API_BASE}/get/groups`),
       ])
 
       if (gamesResult.status === 'rejected') {
         console.warn('Games API failed:', gamesResult.reason.message)
         if (hasAnyCache) {
           serveFromCache(cachedStadiumMap, cachedTeamByName, shell, finished, { offline: false, usingCache: true })
+          const cachedGroups = readGroupsCache()
+          dispatch({
+            type: 'GROUP_STANDINGS_LOADED',
+            payload: cachedGroups ?? computeAllStandings([...finished, ...(shell?.fixtures ?? [])], cachedTeamByName ?? {}),
+          })
         } else {
           dispatch({ type: 'FIXTURES_LOADED', payload: MOCK_DATA.fixtures })
           dispatch({ type: 'SET_DATA_STATUS', payload: { isOffline: false, usingCachedData: true } })
+          dispatch({ type: 'GROUP_STANDINGS_LOADED', payload: computeAllStandings(MOCK_DATA.fixtures, {}) })
         }
         return
       }
@@ -342,6 +373,21 @@ export function AppProvider({ children }) {
       dispatch({ type: 'FIXTURES_LOADED', payload: allFixtures })
       dispatch({ type: 'TEAMS_LOADED', payload: teamByName })
       dispatch({ type: 'SET_DATA_STATUS', payload: { isOffline: false, usingCachedData: false } })
+
+      // Group standings - official API-computed tables, fallback to client-side calc on failure
+      const idToName = Object.fromEntries(Object.values(teamByName).map(t => [t.id, t.name]))
+      if (groupsResult.status === 'fulfilled') {
+        const standings = buildGroupStandings(groupsResult.value, idToName)
+        writeGroupsCache(standings)
+        dispatch({ type: 'GROUP_STANDINGS_LOADED', payload: standings })
+      } else {
+        console.warn('Groups API failed, falling back to client-side calc:', groupsResult.reason?.message)
+        const cachedGroups = readGroupsCache()
+        dispatch({
+          type: 'GROUP_STANDINGS_LOADED',
+          payload: cachedGroups ?? computeAllStandings(allFixtures, teamByName),
+        })
+      }
     }
 
     loadRef.current = load
@@ -366,21 +412,37 @@ export function AppProvider({ children }) {
     }
   }, [])
 
-  // Poll live scores
+  // Poll live scores - also refreshes group standings on the same cadence,
+  // since both change exactly when match results change.
   const pollLive = useCallback(async () => {
     if (USE_MOCK) return
     try {
-      const res = await fetch(`${API_BASE}/get/games`)
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const games = await res.json()
-      dispatch({
-        type: 'LIVE_UPDATE',
-        payload: mergeLiveScores(state.fixtures, games, state.stadiumMap),
-      })
+      const [gamesRes, groupsRes] = await Promise.allSettled([
+        fetch(`${API_BASE}/get/games`).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() }),
+        fetch(`${API_BASE}/get/groups`).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json() }),
+      ])
+
+      if (gamesRes.status === 'fulfilled') {
+        dispatch({
+          type: 'LIVE_UPDATE',
+          payload: mergeLiveScores(state.fixtures, gamesRes.value, state.stadiumMap),
+        })
+      } else {
+        console.warn('Live poll (games) failed:', gamesRes.reason.message)
+      }
+
+      if (groupsRes.status === 'fulfilled') {
+        const idToName = Object.fromEntries(Object.values(state.teamByName).map(t => [t.id, t.name]))
+        const standings = buildGroupStandings(groupsRes.value, idToName)
+        try { sessionStorage.setItem('wc26:groupStandings', JSON.stringify(standings)) } catch { }
+        dispatch({ type: 'GROUP_STANDINGS_LOADED', payload: standings })
+      } else {
+        console.warn('Live poll (groups) failed:', groupsRes.reason.message)
+      }
     } catch (err) {
       console.warn('Live poll failed:', err.message)
     }
-  }, [state.fixtures, state.stadiumMap])
+  }, [state.fixtures, state.stadiumMap, state.teamByName])
 
   // Tier 4: 30s base tick, but only actually hits the API every tick when
   // something is live/starting soon | otherwise 1-in-10 ticks (~5 min) when idle.
