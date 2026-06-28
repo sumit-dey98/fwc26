@@ -21,6 +21,7 @@ export default function Flag({ teamName, size = 20, className = '' }) {
       <img
         src={team.flag}
         alt={teamName}
+        crossOrigin="anonymous"
         style={{ width, height, objectFit: 'cover' }}
         className={cn('flex-shrink-0', className)}
       />
