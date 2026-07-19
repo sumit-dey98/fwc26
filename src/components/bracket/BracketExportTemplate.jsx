@@ -1,7 +1,21 @@
 import { forwardRef, useMemo, Fragment } from 'react'
+import { MOCK_DATA } from '@data/mockData'
 
 const STAGE_ORDER = ['round-of-32', 'round-of-16', 'quarter-finals', 'semi-finals']
 const STAGE_LABELS = ['Round of 32', 'Round of 16', 'Quarter Finals', 'Semi-Finals']
+
+// Static bracket topology (which match feeds which) keyed by matchNumber. Live
+// fixtures overwrite "Winner Match N" / "Loser Match N" placeholders with real
+// team names once resolved, so topology can't always be parsed from them directly.
+const STATIC_CHILDREN = Object.fromEntries(
+  MOCK_DATA.fixtures
+    .map(f => {
+      const home = parseMatchRef(f.homeTeam)
+      const away = parseMatchRef(f.awayTeam)
+      return home != null && away != null ? [f.matchNumber, [home, away]] : null
+    })
+    .filter(Boolean)
+)
 
 const SIZES = {
   boxW: 186,
@@ -29,10 +43,10 @@ function parseMatchRef(label) {
 
 function getChildren(matchNumber, byNumber) {
   const f = byNumber[matchNumber]
-  if (!f) return null
+  if (!f) return STATIC_CHILDREN[matchNumber] ?? null
   const home = parseMatchRef(f.homeTeam)
   const away = parseMatchRef(f.awayTeam)
-  if (home == null || away == null) return null
+  if (home == null || away == null) return STATIC_CHILDREN[matchNumber] ?? null
   return [home, away]
 }
 

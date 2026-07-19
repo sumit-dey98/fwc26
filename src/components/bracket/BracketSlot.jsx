@@ -7,9 +7,9 @@ export default function BracketSlot({ fixture, predicted, onPick, predictMode })
     <div className="border border-navy-700 px-3 py-2 text-2xs text-navy-600 italic">TBD</div>
   )
 
-  const isLive = fixture.status === 'live'
-  const isDone = fixture.status === 'finished'
-  const canPick = predictMode && !isDone
+  const isLive = !predictMode && fixture.status === 'live'
+  const isDone = !predictMode && fixture.status === 'finished'
+  const canPick = predictMode
 
   return (
     <div className={cn(
@@ -34,7 +34,7 @@ export default function BracketSlot({ fixture, predicted, onPick, predictMode })
               className={cn(
                 'flex items-center gap-2 px-3 py-2 border-b last:border-b-0 border-navy-700',
                 canPick && 'cursor-pointer hover:bg-navy-700',
-                isPicked && !isDone && 'bg-green-500/10 border-l-2 border-l-green-500',
+                isPicked && 'bg-green-500/10 border-l-2 border-l-green-500',
                 isWinner && 'border-l-2 border-l-gold-500',
               )}
             >
