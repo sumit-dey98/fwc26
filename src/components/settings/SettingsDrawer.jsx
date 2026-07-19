@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, Star, Search } from 'lucide-react'
+import { X, Star, Search, RotateCcw } from 'lucide-react'
 import { useApp } from '@context/AppContext'
 import TimezoneSelector from './TimezoneSelector'
 import Flag from '@components/ui/Flag'
@@ -7,7 +7,7 @@ import { XCircle } from 'lucide-react'
 import { cn } from '@utils/cn'
 
 export default function SettingsDrawer({ isOpen, onClose }) {
-  const { favoriteTeam, setFavorite, timezone, fontScale, setFontScale, teamByName } = useApp()
+  const { favoriteTeam, setFavorite, timezone, fontScale, setFontScale, teamByName, clearDataCache } = useApp()
 
   const allTeams = Object.values(teamByName)
   const [teamSearch, setTeamSearch] = useState('')
@@ -123,6 +123,20 @@ export default function SettingsDrawer({ isOpen, onClose }) {
           ))}
         </div>
         <p className="text-xs text-content-muted mt-2">Adjusts all interface text size</p>
+      </div>
+
+      <div className="px-4 py-4 border-t border-navy-900">
+        <button
+          onClick={() => {
+            if (confirm('Clear cached match, team, and stadium data and reload? Your predictions and preferences are kept.')) {
+              clearDataCache()
+            }
+          }}
+          className="flex items-center gap-2 px-5 py-2 bg-gold-500 text-navy-950 text-sm font-bold uppercase tracking-widest hover:bg-gold-400 transition-colors"
+        >
+           Clear Cache
+        </button>
+        <p className="text-xs text-content-muted mt-2">Refetches match, team, and stadium data. Useful if something looks stale or broken.</p>
       </div>
 
       <div className="px-4 py-4 border-t border-navy-900 mt-auto flex items-center justify-between flex-wrap gap-x-4">

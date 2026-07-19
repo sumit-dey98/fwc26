@@ -174,29 +174,41 @@ export function AppProvider({ children }) {
 
   // Load fixtures + teams + stadiums
   useEffect(() => {
-    // Tier 1: stadiums + teams | permanent, version-keyed localStorage.
-    // Bump CACHE_VERSION manually if stadium/team data ever needs a forced refresh.
+    // Tier 1: stadiums + teams | version-keyed localStorage, with a TTL so a bad
+    // upstream snapshot (e.g. a broken flag URL) self-heals instead of sticking forever.
+    // Bump CACHE_VERSION manually if the shape of stadium/team data ever changes.
     const CACHE_VERSION = 'v1'
+    const TIER1_TTL = 24 * 60 * 60 * 1000 // 1 day - metadata rarely changes, but this isn't truly immutable
     const tier1Key = name => `wc26:${name}:${CACHE_VERSION}`
 
-    function loadForever(name) {
+    function loadTier1(name) {
       try {
         const raw = localStorage.getItem(tier1Key(name))
-        return raw != null ? JSON.parse(raw) : null
+        if (raw == null) return null
+        const { ts, val } = JSON.parse(raw)
+        if (Date.now() - ts > TIER1_TTL) return null
+        return val
       } catch { return null }
     }
-    function saveForever(name, val) {
-      try { localStorage.setItem(tier1Key(name), JSON.stringify(val)) } catch { }
+    function saveTier1(name, val) {
+      try { localStorage.setItem(tier1Key(name), JSON.stringify({ ts: Date.now(), val })) } catch { }
     }
 
     // Tier 2: finished fixtures | permanent, merged by matchNumber, never expire.
+    // Uses the same versioned key format Tier 1 used to share (pre-TTL refactor) so
+    // existing cached match history in users' browsers isn't orphaned.
+    const FINISHED_KEY = `wc26:finished-fixtures:${CACHE_VERSION}`
+
     function loadFinished() {
-      return loadForever('finished-fixtures') ?? {}
+      try {
+        const raw = localStorage.getItem(FINISHED_KEY)
+        return raw != null ? JSON.parse(raw) : {}
+      } catch { return {} }
     }
     function saveFinishedMerge(newFinished) {
       const merged = { ...loadFinished() }
       for (const f of newFinished) merged[f.matchNumber] = f
-      saveForever('finished-fixtures', merged)
+      try { localStorage.setItem(FINISHED_KEY, JSON.stringify(merged)) } catch { }
       return merged
     }
 
@@ -291,8 +303,13 @@ export function AppProvider({ children }) {
         return
       }
 
-      const cachedStadiumMap = loadForever('stadiums')
-      const cachedTeamByName = loadForever('teams')
+      const rawCachedTeamByName = loadTier1('teams')
+      // Guard against a cached snapshot taken during an upstream glitch (e.g. missing
+      // flag URLs) - don't let a bad snapshot stick around for the full TTL.
+      const cachedTeamByName = rawCachedTeamByName && Object.values(rawCachedTeamByName).every(t => t.flag)
+        ? rawCachedTeamByName
+        : null
+      const cachedStadiumMap = loadTier1('stadiums')
       const shell = readShell()
       const finishedObj = loadFinished()
       const finished = Object.values(finishedObj)
@@ -356,12 +373,12 @@ export function AppProvider({ children }) {
 
       const stadiumMap = cachedStadiumMap
         ?? (stadiumsResult.status === 'fulfilled' ? buildStadiumMap(stadiumsResult.value) : {})
-      if (needStadiums && stadiumsResult.status === 'fulfilled') saveForever('stadiums', stadiumMap)
+      if (needStadiums && stadiumsResult.status === 'fulfilled') saveTier1('stadiums', stadiumMap)
 
       const allFixtures = adaptGames(gamesResult.value, stadiumMap)
       const teamByName = cachedTeamByName
         ?? (teamsResult.status === 'fulfilled' ? buildTeamByName(teamsResult.value) : {})
-      if (needTeams && teamsResult.status === 'fulfilled') saveForever('teams', teamByName)
+      if (needTeams && teamsResult.status === 'fulfilled') saveTier1('teams', teamByName)
 
       // Split + cache: Tier 2 (finished, forever) / Tier 3 (upcoming+live, shell)
       const finishedNow = allFixtures.filter(f => f.status === 'finished')
@@ -487,6 +504,17 @@ export function AppProvider({ children }) {
     setPrediction: (no, s) => dispatch({ type: 'SET_PREDICTION', payload: { matchNumber: no, side: s } }),
     clearPredictions: () => dispatch({ type: 'CLEAR_PREDICTIONS' }),
     setFontScale: scale => dispatch({ type: 'SET_FONT_SCALE', payload: scale }),
+    clearDataCache: () => {
+      // Only wipes fetched/derived data (Tier 1-3 + group standings) - leaves
+      // user preferences (timezone, favorite team, predictions, font size) untouched.
+      const CACHE_VERSION = 'v1'
+      ;['stadiums', 'teams', 'finished-fixtures'].forEach(name => {
+        try { localStorage.removeItem(`wc26:${name}:${CACHE_VERSION}`) } catch { }
+      })
+      try { sessionStorage.removeItem('wc26:shell') } catch { }
+      try { sessionStorage.removeItem('wc26:groupStandings') } catch { }
+      window.location.reload()
+    },
   }
 
   return (
